@@ -4,6 +4,10 @@ export class BootState extends State {
 
     _init = (...additionalParameters: any[]) => {
         log("BOOT: init")
+        window.addEventListener("resize", () => {
+            this.loader.resize()
+        })
+        this.loader.resize()
     }
 
     _preload = () => {

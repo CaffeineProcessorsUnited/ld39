@@ -20,3 +20,7 @@ export function override(container: any, key: string) {
         throw new Error("Method " + key + " of " + container.constructor.name + " does not override any base class method")
     }
 }
+
+export function minmax(val: number, low: number, high: number) {
+    return Math.min(Math.max(val, low), high)
+}

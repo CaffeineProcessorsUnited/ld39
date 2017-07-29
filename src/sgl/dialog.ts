@@ -26,7 +26,7 @@ export class Dialog extends Phaser.Sprite {
 
         let style = {
             font: "20px Helvetica",
-            fill: "#560CA2",
+            fill: "#FAFAFA",
             wordWrap: false,
             align: "center",
             boundsAlignH: "center",

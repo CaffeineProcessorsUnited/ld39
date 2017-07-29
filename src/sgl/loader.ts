@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import {State} from "./state"
+import {log, State} from "./sgl"
 
 export class Loader {
 
@@ -18,8 +18,8 @@ export class Loader {
     private _bootState: State
 
     constructor() {
-        this._width = 800
-        this._height = 600
+        this._width = 200
+        this._height = 300
         this._renderer = Phaser.AUTO
         this._scaling = Phaser.ScaleManager.NO_SCALE
     }
@@ -57,15 +57,15 @@ export class Loader {
         this._parent = parent
     }
 
-    private _width: number
+    private _width: number|string
 
-    set width(width: number) {
+    set width(width: number|string) {
         this._width = width
     }
 
-    private _height: number
+    private _height: number|string
 
-    set height(height: number) {
+    set height(height: number|string) {
         this._height = height
     }
 
@@ -117,16 +117,32 @@ export class Loader {
         this.game.state.start("boot")
     }
 
+    resize() {
+        let screen = window.document.getElementById("screen")!.getBoundingClientRect()
+        let gamediv = window.document.getElementById("game")!
+
+        gamediv.style.position = "absolute"
+        gamediv.style.left = screen.left + "px"
+        gamediv.style.top = screen.top + "px"
+        gamediv.style.width = screen.width + "px"
+        gamediv.style.height = screen.height + "px"
+
+        log(screen.width, screen.height)
+
+        this.game.scale.setGameSize(screen.width, screen.height);
+        (<State>this.game.state.getCurrentState()).stateResize(screen.width, screen.height)
+    }
+
     private validParent(): boolean {
         return this._parent !== undefined && this._parent !== "" && document.getElementById(this._parent) !== undefined
     }
 
     private validWidth(): boolean {
-        return this._width !== undefined && this._width > 0
+        return this._width !== undefined
     }
 
     private validHeight(): boolean {
-        return this._height !== undefined && this._height > 0
+        return this._height !== undefined
     }
 
     private validRenderer(): boolean {

@@ -1,14 +1,16 @@
-import {error, Layer, LayerManager, log, State, Dialog} from "../sgl/sgl"
+import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
 import {AStar} from "../classes/astar"
 
 export class GameState extends State {
 
-    energyReserve: number = 100
+    _energyReserve: number = 100
     energyLossPerSecond: number = 0.1
 
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
+
+    zoom: number = 1
 
     map: Phaser.Tilemap
     cursors: Phaser.CursorKeys
@@ -25,7 +27,7 @@ export class GameState extends State {
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
-        this.game.load.image("dialog", "assets/dialog/box.png")
+        this.game.load.image("dialog", "assets/dialog.png")
         this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
         this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
@@ -35,6 +37,7 @@ export class GameState extends State {
     }
 
     _create = () => {
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
 
         this.setupTilemap()
@@ -44,7 +47,7 @@ export class GameState extends State {
 
         this.cursors = this.game.input.keyboard.createCursorKeys()
 
-        this.game.camera.follow(this.ref("player", "player"))
+        this.game.camera.follow(this.ref("player", "player"), Phaser.Camera.FOLLOW_TOPDOWN)
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
 
@@ -95,6 +98,7 @@ export class GameState extends State {
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
+        this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
     setupTilemap() {
@@ -121,6 +125,7 @@ export class GameState extends State {
             if (_layer !== undefined) {
                 this.layers[idx] = _layer
                 this.layers[idx].resizeWorld()
+                this.layers[idx].autoCull = false
             }
         })
 
@@ -188,6 +193,7 @@ export class GameState extends State {
                 actor("keypress", trigger, event)
             })
         }
+
     }
 
     loadTrigger(json: any) {
@@ -211,7 +217,7 @@ export class GameState extends State {
     }
 
     getCurrentTile() {
-        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y, undefined, true)
     }
 
     getTileAt(x: number, y: number, layer?: string, nonNull?: boolean) {
@@ -230,8 +236,37 @@ export class GameState extends State {
         console.log("GAME OVER")
     }
 
+    get energyReserve() {
+        return this._energyReserve
+    }
+
+    set energyReserve(energyReserve: number) {
+        this._energyReserve = energyReserve
+        this.updateBatteryIcon()
+    }
+
     clubPlayer() {
         this.energyReserve -= 10
+        this.game.camera.shake(0.01, 200)
+    }
+
+    stateResize(width: number, height: number) {
+        log("Resize 2")
+        Object.getOwnPropertyNames(this.layers).forEach((name: string) => {
+            this.layers[name].resize(screen.width, screen.height)
+            this.game.camera.unfollow()
+            this.game.camera.follow(this.ref("player", "player"), Phaser.Camera.FOLLOW_TOPDOWN)
+        })
+    }
+
+    updateBatteryIcon() {
+        let i = Math.floor(this.energyReserve * 5 / 100)
+        let css = `battery${i}`
+        log("Battery is", css)
+        let dom = window.document.getElementById("battery")
+        if (!!dom) {
+            dom.className = css
+        }
     }
 
     hasCollision(x: number, y: number) {

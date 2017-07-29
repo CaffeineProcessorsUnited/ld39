@@ -8,6 +8,7 @@ export interface IState {
     create: () => void
     update: () => void
     render: () => void
+    stateResize: (width: number, height: number) => void
 }
 
 export abstract class State extends Phaser.State implements IState {
@@ -22,6 +23,8 @@ export abstract class State extends Phaser.State implements IState {
     protected _update = () => {
     }
     protected _render = () => {
+    }
+    protected _resize = (width: number, height: number) => {
     }
     private _substates: State[] = new Array()
     private running: boolean
@@ -86,6 +89,13 @@ export abstract class State extends Phaser.State implements IState {
         this._render()
         this._substates.forEach((state: State) => {
             state.render()
+        })
+    }
+
+    stateResize(width: number, height: number) {
+        this._resize(width, height)
+        this._substates.forEach((state: State) => {
+            state.stateResize(width, height)
         })
     }
 
