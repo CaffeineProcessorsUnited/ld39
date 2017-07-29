@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" tiledversion="1.0.2" orientation="orthogonal" renderorder="right-down" width="200" height="60" tilewidth="64" tileheight="64" nextobjectid="1">
- <tileset firstgid="1" name="Shooter" tilewidth="128" tileheight="128" tilecount="540" columns="27">
-  <image source="tilesheet_shooter.png" width="3456" height="2560"/>
+ <tileset firstgid="1" name="Shooter" tilewidth="64" tileheight="64" tilecount="540" columns="27">
+  <image source="tilesheet_shooter.png" width="1728" height="1280"/>
  </tileset>
  <tileset firstgid="541" name="City" tilewidth="64" tileheight="64" spacing="4" tilecount="1036" columns="37">
   <image source="tilesheet_city.png" width="2512" height="1900"/>
