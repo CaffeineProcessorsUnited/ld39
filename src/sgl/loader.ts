@@ -18,8 +18,8 @@ export class Loader {
     private _bootState: State
 
     constructor() {
-        this._width = 800
-        this._height = 600
+        this._width = 200
+        this._height = 300
         this._renderer = Phaser.AUTO
         this._scaling = Phaser.ScaleManager.NO_SCALE
     }
@@ -57,15 +57,15 @@ export class Loader {
         this._parent = parent
     }
 
-    private _width: number
+    private _width: number|string
 
-    set width(width: number) {
+    set width(width: number|string) {
         this._width = width
     }
 
-    private _height: number
+    private _height: number|string
 
-    set height(height: number) {
+    set height(height: number|string) {
         this._height = height
     }
 
@@ -122,11 +122,11 @@ export class Loader {
     }
 
     private validWidth(): boolean {
-        return this._width !== undefined && this._width > 0
+        return this._width !== undefined
     }
 
     private validHeight(): boolean {
-        return this._height !== undefined && this._height > 0
+        return this._height !== undefined
     }
 
     private validRenderer(): boolean {
