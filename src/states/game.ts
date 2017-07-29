@@ -27,7 +27,7 @@ export class GameState extends State {
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
         this.game.load.image("dialog", "assets/dialog/box.png")
         // this.game.load.spritesheet("dude", "assets/dude.png", 32, 48)
-        this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
+        this.game.load.tilemap("tilemap", "assets/Map02.json", null, Phaser.Tilemap.TILED_JSON)
         this.game.load.image("tilesheet", "assets/tilesheet_city.png")
         this.game.load.image("tilesheet", "assets/tilesheet_.png")
         this.game.load.image("tilesheet", "assets/tilesheet_.png")
@@ -97,10 +97,10 @@ export class GameState extends State {
 
         const _layers = [
             "Ground",
-            //"Walls",
-            //"Doors",
-            //"Carpet",
-            //"Shelves",
+            "Walls",
+            "Doors",
+            "Carpet",
+            "Shelves",
         ]
         _layers.forEach((layer: string) => {
             const idx = layer.toLowerCase()
