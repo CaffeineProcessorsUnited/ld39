@@ -1,4 +1,6 @@
+import {log} from "../sgl/sgl"
 import {GameState} from "../states/game"
+
 
 export enum AIState {
     IDLE,
@@ -226,11 +228,12 @@ export class AI {
     }
 
     sitDown(x: number, y: number) {
-        let tile = this.gameState.getTileAt(x, y)
+        let tile = this.gameState.getTileAt(x, y, "Tables")
         this.sprite.position.x = tile.worldX + tile.centerX
         this.sprite.position.y = tile.worldY + tile.centerY
         this.setSitting()
-        this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "tables")
+        log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
+        this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
     }
 
 }

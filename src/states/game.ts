@@ -210,8 +210,8 @@ export class GameState extends State {
         return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
     }
 
-    getTileAt(x: number, y: number) {
-        return this.map.getTileWorldXY(x, y)
+    getTileAt(x: number, y: number, layer?: string, nonNull?: boolean) {
+        return this.map.getTileWorldXY(x, y, this.map.tileWidth, this.map.tileHeight, layer, nonNull)
     }
 
     ref(layer: string, key: string) {
