@@ -1,5 +1,6 @@
-import {error, Layer, LayerManager, log, State} from "../sgl/sgl"
+import {error, Layer, LayerManager, log, State, Dialog} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
+import {AI, AIType} from "../classes/ai"
 
 export class GameState extends State {
 
@@ -14,6 +15,7 @@ export class GameState extends State {
     lastTile: Phaser.Tile
     currentTile: Phaser.Tile
     layerManager: LayerManager
+    ai: AI
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -21,19 +23,18 @@ export class GameState extends State {
 
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
-        this.game.load.image("sky", "assets/sky.png")
-        this.game.load.image("ground", "assets/platform.png")
-        this.game.load.image("star", "assets/star.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
-        // this.game.load.spritesheet("dude", "assets/dude.png", 32, 48)
-        this.game.load.tilemap("tilemap", "assets/Map02.json", null, Phaser.Tilemap.TILED_JSON)
-        this.game.load.image("tilesheet", "assets/medieval_tilesheet.png")
+        this.game.load.image("dialog", "assets/dialog/box.png")
+        this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
+        this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
+        this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
+        this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
+        this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
         this.game.load.json("trigger", "assets/trigger.json")
     }
 
     _create = () => {
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
-        // this.game.add.sprite(0, 0, "sky")
 
         this.setupTilemap()
         this.loadTrigger(this.game.cache.getJSON("trigger"))
@@ -45,12 +46,19 @@ export class GameState extends State {
         this.game.camera.follow(this.ref("player", "player"))
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
+
+        this.ai = new AI(AIType.GUARD, this)
+        this.ai.pickPocket()
+
+        setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
     }
+
     _update = () => {
         this.currentTile = this.getCurrentTile()
+        this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
+        this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
-        console.log(this.energyReserve)
         if (this.energyReserve < 0) {
             this.gameOver()
         }
@@ -76,8 +84,10 @@ export class GameState extends State {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
         }
+
         this.trigger()
         this.lastTile = this.currentTile
+        this.ai.update()
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
@@ -85,13 +95,20 @@ export class GameState extends State {
 
     setupTilemap() {
         this.map = this.game.add.tilemap("tilemap")
-        this.map.addTilesetImage("Medieval", "tilesheet")
+        this.map.addTilesetImage("Collision", "tilesheet_collision")
+        this.map.addTilesetImage("Indoor", "tilesheet_indoor")
+        this.map.addTilesetImage("City", "tilesheet_city")
+        this.map.addTilesetImage("Shooter", "tilesheet_shooter")
 
         const _layers = [
+            "Collision",
             "Ground",
-            "Walls",
+            "Roadmarker",
+            "Roadmarker2",
+            "Environment",
             "Doors",
             "Carpet",
+            "Tables",
             "Shelves",
         ]
         _layers.forEach((layer: string) => {
@@ -116,6 +133,8 @@ export class GameState extends State {
 
         // TODO: Add remaining blocking tile IDs
         this.map.setCollision([15, 16, 17, 18, 33, 34, 35, 36, 51, 52, 53, 54, 55, 65, 57, 58, 73, 74, 75, 76], true, "Environment", false)
+        this.map.setCollision([2045], true, "Collision", false)
+        this.map.setCollisionBetween(2046, 2056/* TODO: Own Tilesheet */, true, "Tables", false)
 
         this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
         this.ref("player", "player").anchor.set(0.5)
@@ -126,6 +145,11 @@ export class GameState extends State {
         this.ref("lights", "logo").anchor.set(0.5)
         this.ref("lights", "logo").width = 64
         this.ref("lights", "logo").height = 64
+
+        this.layerManager.layer("dialog").addRef("dialog", new Dialog(this, 100, 40, "dialog"))
+        this.ref("dialog", "dialog").x = 100
+        this.ref("dialog", "dialog").y = 100
+        this.ref("dialog", "dialog").say("Hello")
     }
 
     setupInput() {
@@ -149,6 +173,13 @@ export class GameState extends State {
         }
 
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
+            if (event.code.toLowerCase() === "space") {
+                let dx = this.ai.sprite.position.x - this.currentTile.worldX
+                let dy = this.ai.sprite.position.y - this.currentTile.worldY
+                if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                    this.ai.pickPocket()
+                }
+            }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
             })
@@ -176,7 +207,11 @@ export class GameState extends State {
     }
 
     getCurrentTile() {
-        return this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+    }
+
+    getTileAt(x: number, y: number, layer?: string, nonNull?: boolean) {
+        return this.map.getTileWorldXY(x, y, this.map.tileWidth, this.map.tileHeight, layer, nonNull)
     }
 
     ref(layer: string, key: string) {
@@ -189,6 +224,10 @@ export class GameState extends State {
 
     gameOver() {
         console.log("GAME OVER")
+    }
+
+    clubPlayer() {
+        this.energyReserve -= 10
     }
 
 }
