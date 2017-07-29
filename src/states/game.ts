@@ -19,6 +19,7 @@ export class GameState extends State {
     currentTile: Phaser.Tile
     layerManager: LayerManager
     ai: AI
+    music: Phaser.Sound
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -37,13 +38,13 @@ export class GameState extends State {
     }
 
     _create = () => {
+
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
 
         this.setupTilemap()
         this.loadTrigger(this.game.cache.getJSON("trigger"))
         this.setupInput()
-
 
         this.cursors = this.game.input.keyboard.createCursorKeys()
 
@@ -95,6 +96,7 @@ export class GameState extends State {
         this.lastTile = this.currentTile
         this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
+        // console.log(this.lastTile.x, this.lastTile.y)
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
@@ -186,7 +188,7 @@ export class GameState extends State {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
                 //if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
-                    this.ai.pickPocket()
+                this.ai.pickPocket()
                 //}
             }
             this.triggers.forEach((trigger: Trigger) => {
@@ -262,7 +264,7 @@ export class GameState extends State {
     updateBatteryIcon() {
         let i = Math.floor(this.energyReserve * 5 / 100)
         let css = `battery${i}`
-        log("Battery is", css)
+        // log("Battery is", css)
         let dom = window.document.getElementById("battery")
         if (!!dom) {
             dom.className = css
@@ -274,5 +276,23 @@ export class GameState extends State {
             return true
         }
         return this.map.getTile(x, y, "Collision") !== null
+    }
+
+    playSound(key: string, loop: boolean = false) {
+        if (this.music !== undefined) {
+            this.music.fadeOut(1)
+        }
+        this.music = this.game.add.audio(key)
+        this.music.loop = loop
+        this.music.play()
+    }
+
+    replaceTile(x: number, y: number, tid: number, layer?: string) {
+        const curTile = this.map.getTile(x, y, layer).index
+        this.map.replace(curTile, tid, x, y, 1, 1, layer)
+    }
+
+    openDoor(x: number, y: number, tid: number) {
+        this.replaceTile(x, y, tid, "Doors")
     }
 }
