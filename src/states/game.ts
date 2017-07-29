@@ -3,15 +3,14 @@ import {Trigger} from "../classes/trigger"
 
 export class GameState extends State {
 
+    energyReserve: number = 100
+    energyLossPerSecond: number = 0.1
+
+    layers: { [layer: string]: Phaser.TilemapLayer } = {}
+
     map: Phaser.Tilemap
     cursors: Phaser.CursorKeys
-    score: number
-    gravityFactor: number = 100
     triggers: Array<Trigger> = []
-    layerGround: Phaser.TilemapLayer
-    layerEnvironment: Phaser.TilemapLayer
-    layerBuildings: Phaser.TilemapLayer
-    layerBuildings2: Phaser.TilemapLayer
     lastTile: Phaser.Tile
     currentTile: Phaser.Tile
     layerManager: LayerManager
@@ -35,79 +34,11 @@ export class GameState extends State {
     _create = () => {
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
         // this.game.add.sprite(0, 0, "sky")
-        this.map = this.game.add.tilemap("tilemap")
-        this.map.addTilesetImage("Medieval", "tilesheet")
 
-        this.layerGround = this.map.createLayer("Ground")
-        this.layerGround.resizeWorld()
-        this.layerEnvironment = this.map.createLayer("Environment")
-        this.layerEnvironment.resizeWorld()
-        this.layerBuildings = this.map.createLayer("Buildings")
-        this.layerBuildings.resizeWorld()
-        this.layerBuildings2 = this.map.createLayer("Buildings2")
-        this.layerBuildings2.resizeWorld()
-
-        // Needs to be initialized after map for the layers to be on top of the map
-        this.layerManager = new LayerManager(this.game)
-        this.layerManager.add("player", new Layer(this.game))
-        this.layerManager.add("lights", new Layer(this.game))
-        this.layerManager.add("dialog", new Layer(this.game))
-
-        // TODO: Add remaining blocking tile IDs
-        this.map.setCollision([15, 16, 17, 18, 33, 34, 35, 36, 51, 52, 53, 54, 55, 65, 57, 58, 73, 74, 75, 76], true, "Environment", false)
-
+        this.setupTilemap()
         this.loadTrigger(this.game.cache.getJSON("trigger"))
+        this.setupInput()
 
-        // this.map.setCollision([2,3,4,6,7,102,103,104,106,107,203,204,205], true, this.layerEnvironment)
-        // let layerBuildings = this.map.createLayer("Buildings")
-        // layerBuildings.resizeWorld()
-        // let layerBuildings2 = this.map.createLayer("Buildings2")
-        // layerBuildings2.resizeWorld()
-
-        // let logo = this.game.add.sprite(this.game.world.width - 16 - 32, 16, "logo")
-        // logo.anchor.setTo(0.5, 0.5)
-        // logo.width = 32
-        // logo.height = 32
-
-        this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
-            this.triggers.forEach((trigger: Trigger) => {
-                trigger.trigger("keydown", {
-                    x: this.currentTile.x,
-                    y: this.currentTile.y,
-                    keyCode: event.code.toLowerCase(),
-                }, this)
-            })
-        }
-
-        this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
-            this.triggers.forEach((trigger: Trigger) => {
-                trigger.trigger("keyup", {
-                    x: this.currentTile.x,
-                    y: this.currentTile.y,
-                    keyCode: event.code.toLowerCase(),
-                }, this)
-            })
-        }
-
-        this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
-            this.triggers.forEach((trigger: Trigger) => {
-                trigger.trigger("keypress", {
-                    x: this.currentTile.x,
-                    y: this.currentTile.y,
-                    keyCode: event.code.toLowerCase(),
-                }, this)
-            })
-        }
-
-        this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
-        this.ref("player", "player").anchor.set(0.5)
-        this.game.physics.enable(this.ref("player", "player"))
-        this.ref("player", "player").body.collideWorldBounds = true
-
-        this.layerManager.layer("lights").addRef("logo", this.game.add.sprite(32, 32, "logo"))
-        this.ref("lights", "logo").anchor.set(0.5)
-        this.ref("lights", "logo").width = 64
-        this.ref("lights", "logo").height = 64
 
         this.cursors = this.game.input.keyboard.createCursorKeys()
 
@@ -117,7 +48,13 @@ export class GameState extends State {
     }
     _update = () => {
         this.currentTile = this.getCurrentTile()
-        this.game.physics.arcade.collide(this.ref("player", "player"), this.layerEnvironment)
+        this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
+        this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
+        console.log(this.energyReserve)
+        if (this.energyReserve < 0) {
+            this.gameOver()
+        }
+
 
         this.ref("player", "player").body.velocity.x = 0
         this.ref("player", "player").body.velocity.y = 0
@@ -146,6 +83,78 @@ export class GameState extends State {
         this.game.debug.body(this.ref("player", "player"))
     }
 
+    setupTilemap() {
+        this.map = this.game.add.tilemap("tilemap")
+        this.map.addTilesetImage("Medieval", "tilesheet")
+
+        const _layers = [
+            "Ground",
+            "Walls",
+            "Doors",
+            "Carpet",
+            "Shelves",
+        ]
+        _layers.forEach((layer: string) => {
+            const idx = layer.toLowerCase()
+            const _layer = this.map.createLayer(layer)
+            if (_layer !== undefined) {
+                this.layers[idx] = _layer
+                this.layers[idx].resizeWorld()
+            }
+        })
+
+        const managedLayers = [
+            "player",
+            "lights",
+            "dialog",
+        ]
+        // Needs to be initialized after map for the layers to be on top of the map
+        this.layerManager = new LayerManager(this.game)
+        managedLayers.forEach((layer: string) => {
+            this.layerManager.add(layer, new Layer(this.game))
+        })
+
+        // TODO: Add remaining blocking tile IDs
+        this.map.setCollision([15, 16, 17, 18, 33, 34, 35, 36, 51, 52, 53, 54, 55, 65, 57, 58, 73, 74, 75, 76], true, "Environment", false)
+
+        this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
+        this.ref("player", "player").anchor.set(0.5)
+        this.game.physics.enable(this.ref("player", "player"))
+        this.ref("player", "player").body.collideWorldBounds = true
+
+        this.layerManager.layer("lights").addRef("logo", this.game.add.sprite(32, 32, "logo"))
+        this.ref("lights", "logo").anchor.set(0.5)
+        this.ref("lights", "logo").width = 64
+        this.ref("lights", "logo").height = 64
+    }
+
+    setupInput() {
+        const actor = (action: string, trigger: Trigger, event: KeyboardEvent) => {
+            trigger.trigger(action, {
+                x: this.currentTile.x,
+                y: this.currentTile.y,
+                keyCode: event.code.toLowerCase(),
+            }, this)
+        }
+        this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
+            this.triggers.forEach((trigger: Trigger) => {
+                actor("keydown", trigger, event)
+            })
+        }
+
+        this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
+            this.triggers.forEach((trigger: Trigger) => {
+                actor("keyup", trigger, event)
+            })
+        }
+
+        this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
+            this.triggers.forEach((trigger: Trigger) => {
+                actor("keypress", trigger, event)
+            })
+        }
+    }
+
     loadTrigger(json: any) {
         if (json !== null && typeof json.trigger === "object") {
             json.trigger.forEach((triggerData: any) => {
@@ -170,18 +179,16 @@ export class GameState extends State {
         return this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
     }
 
-    collectStar(player: Phaser.Sprite, star: Phaser.Sprite): void {
-        log("star")
-        star.kill()
-        this.score += 10
-    }
-
     ref(layer: string, key: string) {
         return this.layerManager.layer(layer).ref(key)
     }
 
     questStuff() {
         log("A quest?")
+    }
+
+    gameOver() {
+        console.log("GAME OVER")
     }
 
 }
