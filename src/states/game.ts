@@ -98,7 +98,8 @@ export class GameState extends State {
         this.lastTile = this.currentTile
         this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
-        this.game.debug.text("CurrentTile: " + this.lastTile.x + ", " + this.lastTile.y, 30, 115)
+        let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
+        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
