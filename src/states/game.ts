@@ -1,6 +1,6 @@
-import {error, Layer, LayerManager, log, State} from "../sgl/sgl"
+import {error, Layer, LayerManager, log, State, Dialog} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
-import {Dialog} from "sgl/dialog";
+import {AI, AIType} from "../classes/ai"
 
 export class GameState extends State {
 
@@ -15,6 +15,7 @@ export class GameState extends State {
     lastTile: Phaser.Tile
     currentTile: Phaser.Tile
     layerManager: LayerManager
+    ai: AI
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -24,7 +25,6 @@ export class GameState extends State {
         this.game.load.image("logo", "assets/logo.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
         this.game.load.image("dialog", "assets/dialog/box.png")
-        // this.game.load.spritesheet("dude", "assets/dude.png", 32, 48)
         this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
         this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
@@ -45,6 +45,9 @@ export class GameState extends State {
         this.game.camera.follow(this.ref("player", "player"))
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
+
+        this.ai = new AI(AIType.GUARD, this)
+        this.ai.pickPocket()
     }
 
     _update = () => {
@@ -52,7 +55,6 @@ export class GameState extends State {
         this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
-        // console.log(this.energyReserve)
         if (this.energyReserve < 0) {
             this.gameOver()
         }
@@ -78,8 +80,10 @@ export class GameState extends State {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
         }
+
         this.trigger()
         this.lastTile = this.currentTile
+        this.ai.update()
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
@@ -161,6 +165,13 @@ export class GameState extends State {
         }
 
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
+            if (event.code.toLowerCase() === "space") {
+                let dx = this.ai.sprite.position.x - this.currentTile.worldX
+                let dy = this.ai.sprite.position.y - this.currentTile.worldY
+                if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                    this.ai.pickPocket()
+                }
+            }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
             })
