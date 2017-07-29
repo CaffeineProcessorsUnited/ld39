@@ -1,6 +1,8 @@
 import {log} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
+import {AStar} from "./astar"
+import {Pathfinder} from "./pathfinder"
 
 
 export enum AIState {
@@ -25,16 +27,18 @@ export enum AIType {
 export class AI {
     private gameState: GameState
     private player: any
-    private dx: number
-    private dy: number
-    private dist: number
     private tileSize: number
     private giveUp: IncRand
     private speedUp: IncRand
+    private timeout: number
+
+    private pathfinder: Pathfinder
+    private plannedPoints: Phaser.Point[]
+    private currentPoint: number
+    private targetX: number
+    private targetY: number
 
     sprite: Phaser.Sprite
-    targetX: number
-    targetY: number
     speed: number
     maxSpeed: number
     reactionDelay: number
@@ -45,6 +49,9 @@ export class AI {
 
     constructor(type: AIType, gameState: GameState) {
         this.gameState = gameState
+        this.pathfinder = new Pathfinder(this, this.gameState)
+        this.plannedPoints = []
+        this.currentPoint = 0
 
         this.type = type
         this.speed = 0
@@ -119,15 +126,15 @@ export class AI {
     }
 
     update() {
-        this.calcDelta()
         this.gameState.game.physics.arcade.collide(this.sprite)
+        this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
+        this.pathfinder.setCurrent(this.position)
 
         if (this.state === AIState.CHASING) {
-            this.targetX = this.player.position.x
-            this.targetY = this.player.position.y
             if (this.nearTarget()) {
                 this.gameState.clubPlayer()
                 this.setStroll()
+                return
             }
 
             // Chance to give up chace
@@ -139,48 +146,76 @@ export class AI {
                 this.speed += 0.1 * (Math.random() * 2 - 1)
             }
         } else if (this.state === AIState.STROLL) {
+            if (this.sprite.body.blocked.left ||
+                this.sprite.body.blocked.right ||
+                this.sprite.body.blocked.top ||
+                this.sprite.body.blocked.down
+
+            ) {
+                console.log("BLOCKED")
+                this.doStroll(0)
+                return
+            }
+
             if (this.nearTarget() || Math.random() < 0.001) {
                 this.setStroll()
+                return
             }
         } else if (this.state === AIState.TALKING) {
             this.speed = 0
         }
 
-        if (this.sprite.body.blocked.left ||
-            this.sprite.body.blocked.right ||
-            this.sprite.body.blocked.top ||
-            this.sprite.body.blocked.down
+        if (this.nearCurrentPoint()) {
+            this.currentPoint += 1
+        }
+        this.move()
+    }
 
-        ) {
-            console.log("BLOCKED")
-            if (this.state === AIState.STROLL) {
-                this.doStroll(0)
-            }
+    nearCurrentPoint(): boolean {
+        if (this.currentPoint >= this.plannedPoints.length) {
+            return false
         }
 
-
-        this.follow()
-
+        const dx = this.plannedPoints[this.currentPoint].x - this.position.x
+        const dy = this.plannedPoints[this.currentPoint].y - this.position.y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        return dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
     }
 
-    calcDelta() {
-        this.dx = this.targetX - this.sprite.position.x
-        this.dy = this.targetY - this.sprite.position.y
-        this.dist = Math.sqrt(this.dx * this.dx + this.dy * this.dy)
-    }
-
-    follow() {
-        this.calcDelta()
-
+    move() {
         if (this.nearTarget()) {
             this.sprite.position.x = this.targetX
             this.sprite.position.y = this.targetY
             this.sprite.body.velocity.x = 0
             this.sprite.body.velocity.y = 0
         } else {
-            this.sprite.body.velocity.x = this.dx / this.dist * this.speed
-            this.sprite.body.velocity.y = this.dy / this.dist * this.speed
+            if (this.plannedPoints && this.plannedPoints.length > 0 && this.currentPoint < this.plannedPoints.length) {
+                const dx = this.plannedPoints[this.currentPoint].x - this.position.x
+                const dy = this.plannedPoints[this.currentPoint].y - this.position.y
+                const dist = Math.sqrt(dx * dx + dy * dy)
+
+                this.sprite.body.velocity.x = dx / dist * this.speed
+                this.sprite.body.velocity.y = dy / dist * this.speed
+
+                // this.plannedPoints.forEach(value => {
+                //     this.gameState.game.debug.rectangle(
+                //         new Phaser.Rectangle(
+                //             value.x,
+                //             value.y,
+                //             20,
+                //             20),
+                //         "#ff0000")
+                // })
+            } else {
+                const dx = this.targetX - this.position.x
+                const dy = this.targetY - this.position.y
+                const dist = Math.sqrt(dx * dx + dy * dy)
+
+                this.sprite.body.velocity.x = dx / dist * this.speed
+                this.sprite.body.velocity.y = dy / dist * this.speed
+            }
         }
+
     }
 
     pickPocket() {
@@ -196,7 +231,7 @@ export class AI {
     }
 
     private doChase(delay: number) {
-        setTimeout(() => {
+        this.async(() => {
             this.state = AIState.CHASING
             this.speed = this.maxSpeed
             this.giveUp.reset()
@@ -205,15 +240,17 @@ export class AI {
     }
 
     private doStroll(delay: number) {
-        setTimeout(() => {
+        this.async(() => {
             this.state = AIState.STROLL
             this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
-            this.targetX += Math.round(Math.random() * 2 - 1) * this.tileSize
-            this.targetY += Math.round(Math.random() * 2 - 1) * this.tileSize
+            this.setTarget(
+                this.targetX + Math.round(Math.random() * 4 - 2) * this.tileSize,
+                this.targetY + Math.round(Math.random() * 4 - 2) * this.tileSize)
         }, delay * 1000)
     }
 
     setIdle() {
+        this.clearTimeout()
         this.state = AIState.IDLE
         this.speed = 0
     }
@@ -224,6 +261,7 @@ export class AI {
     }
 
     setTalking() {
+        this.clearTimeout()
         this.state = AIState.TALKING
         this.speed = 0
     }
@@ -233,11 +271,16 @@ export class AI {
     }
 
     setSitting() {
+        this.clearTimeout()
         this.state = AIState.SITTING
+        this.speed = 0
     }
 
     nearTarget(): boolean {
-        return this.dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
+        const dx = this.position.x - this.targetX
+        const dy = this.position.y - this.targetY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        return dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
     }
 
     getTileId() {
@@ -246,11 +289,57 @@ export class AI {
 
     sitDown(x: number, y: number) {
         let tile = this.gameState.getTileAt(x, y, "Tables")
-        this.sprite.position.x = tile.worldX + tile.centerX
-        this.sprite.position.y = tile.worldY + tile.centerY
+        this.position.x = tile.worldX + tile.centerX
+        this.position.y = tile.worldY + tile.centerY
         this.setSitting()
         log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
         this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
     }
 
+    clearTimeout() {
+        if (this.timeout !== undefined) {
+            clearTimeout(this.timeout)
+        }
+    }
+
+    async(func: Function, delta: number) {
+        this.clearTimeout()
+        this.timeout = setTimeout(
+            () => {
+                this.timeout = undefined
+                func()
+            }, delta
+        )
+    }
+
+    get position(): Phaser.Point {
+        return this.sprite.position
+    }
+
+    setTarget(x: number, y: number) {
+        const dx = this.position.x - x
+        const dy = this.position.y - y
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        // console.log("++++", dx, dy, norm, this.tileSize)
+
+        this.targetX = x
+        this.targetY = y
+        if (dist < this.tileSize) {
+            this.plannedPoints = [new Phaser.Point(x, y)]
+            this.currentPoint = 0
+        } else {
+            this.pathfinder.setTarget(new Phaser.Point(x, y))
+        }
+    }
+
+    onPlayerMove(pos: Phaser.Point) {
+        if (this.state === AIState.CHASING) {
+            this.pathfinder.setTarget(pos)
+        }
+    }
+
+    newTargets(pos: Phaser.Point[]) {
+        this.plannedPoints = pos
+        this.currentPoint = 0
+    }
 }

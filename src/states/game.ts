@@ -1,6 +1,7 @@
 import {error, Layer, LayerManager, log, State, Dialog} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
+import {AStar} from "../classes/astar"
 
 export class GameState extends State {
 
@@ -50,7 +51,9 @@ export class GameState extends State {
         this.ai = new AI(AIType.GUARD, this)
         this.ai.pickPocket()
 
-        setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
+        setTimeout(() => {
+            this.ai.sitDown(125, 125)
+        }, 5000)
     }
 
     _update = () => {
@@ -87,6 +90,7 @@ export class GameState extends State {
 
         this.trigger()
         this.lastTile = this.currentTile
+        this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
     }
     _render = () => {
@@ -176,9 +180,9 @@ export class GameState extends State {
             if (event.code.toLowerCase() === "space") {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
-                if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                //if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
                     this.ai.pickPocket()
-                }
+                //}
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
@@ -230,4 +234,10 @@ export class GameState extends State {
         this.energyReserve -= 10
     }
 
+    hasCollision(x: number, y: number) {
+        if (x < 0 || y < 0 || x > this.map.width || y > this.map.height) {
+            return true
+        }
+        return this.map.getTile(x, y, "Collision") !== null
+    }
 }
