@@ -46,7 +46,7 @@ export class GameState extends State {
 
         this.cursors = this.game.input.keyboard.createCursorKeys()
 
-        this.game.camera.follow(this.ref("player", "player"))
+        this.game.camera.follow(this.ref("player", "player"), Phaser.Camera.FOLLOW_TOPDOWN)
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
 
@@ -94,6 +94,7 @@ export class GameState extends State {
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
+        this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
     setupTilemap() {
@@ -189,11 +190,6 @@ export class GameState extends State {
             })
         }
 
-        /* Needs to be fixed!
-        window.addEventListener("wheel", (e: WheelEvent) => {
-            this.zoom = Phaser.Math.clamp(this.zoom - 0.06 * Math.sin(e.deltaY), 0.25, 2)
-            this.game.world.scale.set(this.zoom)
-        })*/
     }
 
     loadTrigger(json: any) {
@@ -217,7 +213,7 @@ export class GameState extends State {
     }
 
     getCurrentTile() {
-        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y, undefined, true)
     }
 
     getTileAt(x: number, y: number, layer?: string, nonNull?: boolean) {
@@ -239,6 +235,15 @@ export class GameState extends State {
     clubPlayer() {
         this.energyReserve -= 10
         this.game.camera.shake(0.01, 200)
+    }
+
+    stateResize(width: number, height: number) {
+        log("Resize 2")
+        Object.getOwnPropertyNames(this.layers).forEach((name: string) => {
+            this.layers[name].resize(screen.width, screen.height)
+            this.game.camera.unfollow()
+            this.game.camera.follow(this.ref("player", "player"), Phaser.Camera.FOLLOW_TOPDOWN)
+        })
     }
 
 }
