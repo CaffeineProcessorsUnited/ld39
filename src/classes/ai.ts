@@ -1,8 +1,9 @@
-import {log} from "../sgl/sgl"
+import {log, error} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {AStar} from "./astar"
 import {Pathfinder} from "./pathfinder"
+import {isNullOrUndefined} from "util"
 
 
 export enum AIState {
@@ -289,6 +290,10 @@ export class AI {
 
     sitDown(x: number, y: number) {
         let tile = this.gameState.getTileAt(x, y, "Tables")
+        if (isNullOrUndefined(tile)) {
+            error("Can't sit down at ${x}, ${y} because it hast no tile to replace")
+            return
+        }
         this.position.x = tile.worldX + tile.centerX
         this.position.y = tile.worldY + tile.centerY
         this.setSitting()
