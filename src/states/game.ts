@@ -36,6 +36,7 @@ export class GameState extends State {
         this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
+        this.game.load.audio("dark_mix", "assets/dark_mix.ogg")
     }
 
     _create = () => {
@@ -97,7 +98,7 @@ export class GameState extends State {
         this.lastTile = this.currentTile
         this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
-        // console.log(this.lastTile.x, this.lastTile.y)
+        this.game.debug.text("CurrentTile: " + this.lastTile.x + ", " + this.lastTile.y, 30, 115)
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
