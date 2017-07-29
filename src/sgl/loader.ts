@@ -1,5 +1,5 @@
 /// <reference path="../../typings/index.d.ts" />
-import {State} from "./state"
+import {log, State} from "./sgl"
 
 export class Loader {
 
@@ -115,6 +115,22 @@ export class Loader {
             this.game.state.add("boot", this._bootState, false)
         }
         this.game.state.start("boot")
+    }
+
+    resize() {
+        let screen = window.document.getElementById("screen")!.getBoundingClientRect()
+        let gamediv = window.document.getElementById("game")!
+
+        gamediv.style.position = "absolute"
+        gamediv.style.left = screen.left + "px"
+        gamediv.style.top = screen.top + "px"
+        gamediv.style.width = screen.width + "px"
+        gamediv.style.height = screen.height + "px"
+
+        log(screen.width, screen.height)
+
+        this.game.scale.setGameSize(screen.width, screen.height);
+        (<State>this.game.state.getCurrentState()).stateResize(screen.width, screen.height)
     }
 
     private validParent(): boolean {
