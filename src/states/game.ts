@@ -4,7 +4,7 @@ import {AI, AIType} from "../classes/ai"
 
 export class GameState extends State {
 
-    energyReserve: number = 100
+    _energyReserve: number = 100
     energyLossPerSecond: number = 0.1
 
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
@@ -232,6 +232,15 @@ export class GameState extends State {
         console.log("GAME OVER")
     }
 
+    get energyReserve() {
+        return this._energyReserve
+    }
+
+    set energyReserve(energyReserve: number) {
+        this._energyReserve = energyReserve
+        this.updateBatteryIcon()
+    }
+
     clubPlayer() {
         this.energyReserve -= 10
         this.game.camera.shake(0.01, 200)
@@ -244,6 +253,16 @@ export class GameState extends State {
             this.game.camera.unfollow()
             this.game.camera.follow(this.ref("player", "player"), Phaser.Camera.FOLLOW_TOPDOWN)
         })
+    }
+
+    updateBatteryIcon() {
+        let i = Math.floor(this.energyReserve * 5 / 100)
+        let css = `battery${i}`
+        log("Battery is", css)
+        let dom = window.document.getElementById("battery")
+        if (!!dom) {
+            dom.className = css
+        }
     }
 
 }

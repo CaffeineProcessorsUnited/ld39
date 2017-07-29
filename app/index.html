@@ -9,6 +9,7 @@
             padding: 0;
             text-align: center;
             height: 100%;
+            background-repeat: no-repeat;
             background-image: url("assets/background.jpg");
             background-size: cover;
             background-position: center;
@@ -28,6 +29,33 @@
             margin-top: 10vh;
             overflow: hidden;
 
+        }
+
+        #battery {
+            background-repeat: no-repeat;
+            background-size: contain;
+            width: 80px;
+            height: 20px;
+        }
+
+        .battery0 {
+            background-image: url("assets/battery0.png");
+        }
+
+        .battery1 {
+            background-image: url("assets/battery1.png");
+        }
+
+        .battery2 {
+            background-image: url("assets/battery2.png");
+        }
+
+        .battery3 {
+            background-image: url("assets/battery3.png");
+        }
+
+        .battery4 {
+            background-image: url("assets/battery4.png");
         }
 
         @keyframes blink-red {
@@ -149,6 +177,7 @@
     <!--<script src="app.js" type="text/javascript"></script>-->
 </head>
 <body>
+<div id="battery" class="battery0"></div>
 <svg
         xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:cc="http://creativecommons.org/ns#"

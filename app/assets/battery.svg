@@ -53,7 +53,9 @@
      inkscape:groupmode="layer"
      id="layer1">
     <g
-       id="g79">
+       id="g79"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <rect
          transform="matrix(0,1,1,0,0,0)"
          ry="2.7931373"
@@ -88,7 +90,9 @@
     </g>
     <g
        id="g85"
-       transform="translate(0,21.166667)">
+       transform="translate(0,21.166667)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <rect
          style="fill:#333333;stroke-width:0.18542926"
          id="rect81"
@@ -132,7 +136,9 @@
     </g>
     <g
        id="g103"
-       transform="translate(0,42.333335)">
+       transform="translate(0,42.333335)"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <rect
          style="fill:#333333;stroke-width:0.18542926"
          id="rect99"
@@ -185,7 +191,10 @@
     </g>
     <g
        transform="translate(0,63.500003)"
-       id="g121">
+       id="g121"
+       inkscape:export-filename="/home/nox/battery3.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <rect
          transform="matrix(0,1,1,0,0,0)"
          ry="2.7931373"
@@ -247,7 +256,10 @@
     </g>
     <g
        id="g139"
-       transform="translate(0,84.666671)">
+       transform="translate(0,84.666671)"
+       inkscape:export-filename="/home/nox/battery4.png"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96">
       <rect
          style="fill:#333333;stroke-width:0.18542926"
          id="rect135"
