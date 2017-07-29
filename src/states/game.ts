@@ -49,6 +49,8 @@ export class GameState extends State {
 
         this.ai = new AI(AIType.GUARD, this)
         this.ai.pickPocket()
+
+        setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
     }
 
     _update = () => {
@@ -132,6 +134,7 @@ export class GameState extends State {
         // TODO: Add remaining blocking tile IDs
         this.map.setCollision([15, 16, 17, 18, 33, 34, 35, 36, 51, 52, 53, 54, 55, 65, 57, 58, 73, 74, 75, 76], true, "Environment", false)
         this.map.setCollision([2045], true, "Collision", false)
+        this.map.setCollisionBetween(2046, 2056/* TODO: Own Tilesheet */, true, "Tables", false)
 
         this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
         this.ref("player", "player").anchor.set(0.5)
@@ -204,7 +207,11 @@ export class GameState extends State {
     }
 
     getCurrentTile() {
-        return this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+    }
+
+    getTileAt(x: number, y: number) {
+        return this.map.getTileWorldXY(x, y)
     }
 
     ref(layer: string, key: string) {

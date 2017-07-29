@@ -40,8 +40,8 @@ export class Dialog extends Phaser.Sprite {
     updatePosition() {
         this.width = this.text.width + this.marginH * 2
         this.height = this.text.height + this.marginV * 2
-        this.text.position.x = this.x// + this.marginH
-        this.text.position.y = this.y// + this.marginV
+        this.text.position.x = this.x
+        this.text.position.y = this.y
     }
 
     say(text: string) {

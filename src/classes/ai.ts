@@ -5,6 +5,7 @@ export enum AIState {
     STROLL,
     TALKING,
     CHASING,
+    SITTING,
 }
 
 export enum AIType {
@@ -212,8 +213,24 @@ export class AI {
         this.doChase(this.reactionDelay)
     }
 
+    setSitting() {
+        this.state = AIState.SITTING
+    }
+
     nearTarget(): boolean {
         return this.dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
+    }
+
+    getTileId() {
+        return 943 // TODO: Calculate with custom Tilesheet
+    }
+
+    sitDown(x: number, y: number) {
+        let tile = this.gameState.getTileAt(x, y)
+        this.sprite.position.x = tile.worldX + tile.centerX
+        this.sprite.position.y = tile.worldY + tile.centerY
+        this.setSitting()
+        this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "tables")
     }
 
 }
