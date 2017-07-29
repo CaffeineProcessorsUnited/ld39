@@ -214,4 +214,8 @@ export class GameState extends State {
         console.log("GAME OVER")
     }
 
+    clubPlayer() {
+        this.energyReserve -= 10
+    }
+
 }

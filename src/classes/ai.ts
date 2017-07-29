@@ -1,4 +1,5 @@
 import {GameState} from "../states/game"
+import {IncRand} from "./incrand"
 
 export enum AIState {
     IDLE,
@@ -25,6 +26,8 @@ export class AI {
     private dy: number
     private dist: number
     private tileSize: number
+    private giveUp: IncRand
+    private speedUp: IncRand
 
     sprite: Phaser.Sprite
     targetX: number
@@ -44,6 +47,8 @@ export class AI {
         this.speed = 0
         this.state = AIState.IDLE
         let spriteKey = ""
+        this.giveUp = new IncRand(0.02, 5, 20)
+        this.speedUp = new IncRand(0.2, 10, 20)
 
         this.tileSize = this.gameState.map.tileWidth
 
@@ -118,7 +123,17 @@ export class AI {
             this.targetX = this.player.position.x
             this.targetY = this.player.position.y
             if (this.nearTarget()) {
+                this.gameState.clubPlayer()
                 this.setStroll()
+            }
+
+            // Chance to give up chace
+            if (this.giveUp.getRand()) {
+                this.setStroll()
+            }
+            // Chance to sprint / slow down
+            if (this.speedUp.getRand()) {
+                this.speed += 0.1 * (Math.random() * 2 - 1)
             }
         } else if (this.state === AIState.STROLL) {
             if (this.nearTarget() || Math.random() < 0.001) {
@@ -181,6 +196,8 @@ export class AI {
         setTimeout(() => {
             this.state = AIState.CHASING
             this.speed = this.maxSpeed
+            this.giveUp.reset()
+            this.speedUp.reset()
         }, delay * 1000)
     }
 
