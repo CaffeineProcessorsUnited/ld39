@@ -1,6 +1,7 @@
 import {error, Layer, LayerManager, log, State} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
+import {Dialog} from "sgl/dialog";
 
 export class GameState extends State {
 
@@ -23,13 +24,13 @@ export class GameState extends State {
 
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
-        this.game.load.image("sky", "assets/sky.png")
-        this.game.load.image("ground", "assets/platform.png")
-        this.game.load.image("star", "assets/star.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
+        this.game.load.image("dialog", "assets/dialog/box.png")
         // this.game.load.spritesheet("dude", "assets/dude.png", 32, 48)
-        this.game.load.tilemap("tilemap", "assets/Map02.json", null, Phaser.Tilemap.TILED_JSON)
-        this.game.load.image("tilesheet", "assets/medieval_tilesheet.png")
+        this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
+        this.game.load.image("tilesheet", "assets/tilesheet_city.png")
+        this.game.load.image("tilesheet", "assets/tilesheet_.png")
+        this.game.load.image("tilesheet", "assets/tilesheet_.png")
         this.game.load.json("trigger", "assets/trigger.json")
     }
 
@@ -53,6 +54,7 @@ export class GameState extends State {
     }
     _update = () => {
         this.currentTile = this.getCurrentTile()
+        this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
         if (this.energyReserve < 0) {
@@ -95,10 +97,10 @@ export class GameState extends State {
 
         const _layers = [
             "Ground",
-            "Walls",
-            "Doors",
-            "Carpet",
-            "Shelves",
+            //"Walls",
+            //"Doors",
+            //"Carpet",
+            //"Shelves",
         ]
         _layers.forEach((layer: string) => {
             const idx = layer.toLowerCase()
@@ -132,6 +134,11 @@ export class GameState extends State {
         this.ref("lights", "logo").anchor.set(0.5)
         this.ref("lights", "logo").width = 64
         this.ref("lights", "logo").height = 64
+
+        this.layerManager.layer("dialog").addRef("dialog", new Dialog(this, 100, 40, "dialog"))
+        this.ref("dialog", "dialog").x = 100
+        this.ref("dialog", "dialog").y = 100
+        this.ref("dialog", "dialog").say("Hello")
     }
 
     setupInput() {
