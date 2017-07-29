@@ -1,0 +1,101 @@
+{
+  "height": 14,
+  "width": 4,
+  "layers": [
+    {
+      "data": [
+        23, 6, 6, 24,
+        5, 1, 2, 5,
+        5, 1, 58, 5,
+        41, 6, 8, 42,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 5, 1,
+        1, 2, 44, 1
+      ],
+      "height": 14,
+      "width": 4,
+      "name": "Ground",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 117, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 51, 0
+      ],
+      "height": 14,
+      "width": 4,
+      "name": "Buildings",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "data": [
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 117, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 0, 0,
+        0, 0, 72, 0
+      ],
+      "height": 14,
+      "width": 4,
+      "name": "Buildings2",
+      "opacity": 1,
+      "type": "tilelayer",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "orientation": "orthogonal",
+  "properties": {},
+  "tileheight": 64,
+  "tilewidth": 64,
+  "tilesets": [{
+    "firstgid": 1,
+    "image": "assets/medieval_tilesheet.png",
+    "imagewidth": 1760,
+    "imageheight": 704,
+    "margin": 32,
+    "name": "Medieval",
+    "properties": {},
+    "spacing": 32,
+    "tileheight": 64,
+    "tilewidth": 64
+  }],
+  "version": 1
+}

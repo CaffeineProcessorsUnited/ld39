@@ -1,0 +1,21 @@
+{
+  "name": "phaser-1",
+  "version": "1.0.0",
+  "main": "app.ts",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^8.0.9",
+    "typescript": "^2.4.1"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.18.12",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-tslint": "^8.1.1",
+    "gulp-typescript": "^3.2.0",
+    "phaser-ce": "^2.8.1",
+    "run-sequence": "^2.0.0",
+    "tslint": "^5.5.0",
+    "typings": "^2.1.1"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "amd",
+    "jsx": "preserve",
+    "sourceMap": true,
+    "outDir": "build",
+    "strict": true,
+    "baseUrl": "src",
+    "allowSyntheticDefaultImports": true,
+    "removeComments": true
+  },
+  "filesGlob": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

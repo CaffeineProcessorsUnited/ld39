@@ -1,0 +1,29 @@
+{
+  "trigger": [
+    {
+      "x": 0,
+      "y": 0,
+      "keypress": {
+        "keyA": "this.layerManager.sort(['lights', 'player'])",
+        "keyS": "this.layerManager.sort(['player', 'lights'])"
+      }
+
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "enter": "console.log('Hi, House');this.questStuff();",
+      "exit": "console.log('Bye, House')",
+      "keypress": {
+        "Space": "this.changeState('menu')"
+      }
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "enter": "console.log('Hi, Mill')",
+      "exit": "console.log('Bye, Mill')",
+      "each": "console.log('Frame, Mill')"
+    }
+  ]
+}
