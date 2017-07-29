@@ -190,17 +190,6 @@ export class GameState extends State {
             })
         }
 
-        window.addEventListener("wheel", (e: WheelEvent) => {
-            this.zoom = Phaser.Math.clamp(this.zoom - 0.06 * Math.sin(e.deltaY), 0.25, 2)
-            //this.game.world.scale.set(this.zoom)
-            /*Object.getOwnPropertyNames(this.layers).forEach((key: string) => {
-                let layer: Phaser.TilemapLayer = this.layers[key]
-                layer.setScale(this.zoom)
-                layer.resizeWorld()
-            })*/
-            this.game.camera.scale.set(this.zoom)
-            log(this.game, this.game.camera, this.game.camera.scale, this.game.camera.scale.x, this.game.camera.scale.y)
-        })
     }
 
     loadTrigger(json: any) {
