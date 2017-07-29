@@ -26,15 +26,14 @@ export class GameState extends State {
         this.game.load.image("dialog", "assets/dialog/box.png")
         // this.game.load.spritesheet("dude", "assets/dude.png", 32, 48)
         this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
-        this.game.load.image("tilesheet", "assets/tilesheet_city.png")
-        this.game.load.image("tilesheet", "assets/tilesheet_.png")
-        this.game.load.image("tilesheet", "assets/tilesheet_.png")
+        this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
+        this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
+        this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
         this.game.load.json("trigger", "assets/trigger.json")
     }
 
     _create = () => {
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
-        // this.game.add.sprite(0, 0, "sky")
 
         this.setupTilemap()
         this.loadTrigger(this.game.cache.getJSON("trigger"))
@@ -47,6 +46,7 @@ export class GameState extends State {
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
     }
+
     _update = () => {
         this.currentTile = this.getCurrentTile()
         this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
@@ -87,14 +87,19 @@ export class GameState extends State {
 
     setupTilemap() {
         this.map = this.game.add.tilemap("tilemap")
-        this.map.addTilesetImage("Medieval", "tilesheet")
+        this.map.addTilesetImage("Indoor", "tilesheet_indoor")
+        this.map.addTilesetImage("City", "tilesheet_city")
+        this.map.addTilesetImage("Shooter", "tilesheet_shooter")
 
         const _layers = [
             "Ground",
-            //"Walls",
-            //"Doors",
-            //"Carpet",
-            //"Shelves",
+            "Roadmarker",
+            "Roadmarler2",
+            "Environment",
+            "Doors",
+            "Carpet",
+            "Tables",
+            "Shelves",
         ]
         _layers.forEach((layer: string) => {
             const idx = layer.toLowerCase()
