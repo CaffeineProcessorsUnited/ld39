@@ -224,7 +224,7 @@ export class GameState extends State {
     }
 
     getCurrentTile() {
-        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        return this.getTileAt(this.ref("player", "player").position.x, this.ref("player", "player").position.y, undefined, true)
     }
 
     getTileAt(x: number, y: number, layer?: string, nonNull?: boolean) {
