@@ -29,6 +29,7 @@ export class GameState extends State {
         this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
         this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
+        this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
         this.game.load.json("trigger", "assets/trigger.json")
     }
 
@@ -54,6 +55,7 @@ export class GameState extends State {
         this.currentTile = this.getCurrentTile()
         this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
+        this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
         if (this.energyReserve < 0) {
             this.gameOver()
@@ -91,14 +93,16 @@ export class GameState extends State {
 
     setupTilemap() {
         this.map = this.game.add.tilemap("tilemap")
+        this.map.addTilesetImage("Collision", "tilesheet_collision")
         this.map.addTilesetImage("Indoor", "tilesheet_indoor")
         this.map.addTilesetImage("City", "tilesheet_city")
         this.map.addTilesetImage("Shooter", "tilesheet_shooter")
 
         const _layers = [
+            "Collision",
             "Ground",
             "Roadmarker",
-            "Roadmarler2",
+            "Roadmarker2",
             "Environment",
             "Doors",
             "Carpet",
@@ -127,6 +131,7 @@ export class GameState extends State {
 
         // TODO: Add remaining blocking tile IDs
         this.map.setCollision([15, 16, 17, 18, 33, 34, 35, 36, 51, 52, 53, 54, 55, 65, 57, 58, 73, 74, 75, 76], true, "Environment", false)
+        this.map.setCollision([2045], true, "Collision", false)
 
         this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
         this.ref("player", "player").anchor.set(0.5)
