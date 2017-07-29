@@ -1,4 +1,4 @@
-import {error, Layer, LayerManager, log, State, Dialog} from "../sgl/sgl"
+import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
 
@@ -8,6 +8,8 @@ export class GameState extends State {
     energyLossPerSecond: number = 0.1
 
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
+
+    zoom: number = 1
 
     map: Phaser.Tilemap
     cursors: Phaser.CursorKeys
@@ -24,7 +26,7 @@ export class GameState extends State {
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
-        this.game.load.image("dialog", "assets/dialog/box.png")
+        this.game.load.image("dialog", "assets/dialog.png")
         this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
         this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
@@ -34,6 +36,7 @@ export class GameState extends State {
     }
 
     _create = () => {
+        this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
 
         this.setupTilemap()
@@ -117,6 +120,7 @@ export class GameState extends State {
             if (_layer !== undefined) {
                 this.layers[idx] = _layer
                 this.layers[idx].resizeWorld()
+                this.layers[idx].autoCull = false
             }
         })
 
@@ -184,6 +188,12 @@ export class GameState extends State {
                 actor("keypress", trigger, event)
             })
         }
+
+        /* Needs to be fixed!
+        window.addEventListener("wheel", (e: WheelEvent) => {
+            this.zoom = Phaser.Math.clamp(this.zoom - 0.06 * Math.sin(e.deltaY), 0.25, 2)
+            this.game.world.scale.set(this.zoom)
+        })*/
     }
 
     loadTrigger(json: any) {
@@ -228,6 +238,7 @@ export class GameState extends State {
 
     clubPlayer() {
         this.energyReserve -= 10
+        this.game.camera.shake(0.01, 200)
     }
 
 }

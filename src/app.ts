@@ -3,11 +3,9 @@ import {BootState} from "./states/boot"
 import {MenuState} from "./states/menu"
 import {GameState} from "./states/game"
 
-let loader: Loader
-let game: Phaser.Game
-
 ready(() => {
-    loader = new Loader()
+    (<any>window).loader = new Loader()
+    let loader = (<any>window).loader
     loader.parent = "game"
     // Initialize game
     // game = loader.game
