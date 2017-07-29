@@ -32,6 +32,7 @@ export class GameState extends State {
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
         this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
         this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
+        this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
     }
 
@@ -103,17 +104,20 @@ export class GameState extends State {
         this.map.addTilesetImage("Indoor", "tilesheet_indoor")
         this.map.addTilesetImage("City", "tilesheet_city")
         this.map.addTilesetImage("Shooter", "tilesheet_shooter")
+        this.map.addTilesetImage("Custom", "tilesheet_custom")
 
         const _layers = [
             "Collision",
             "Ground",
+            "Glass",
             "Roadmarker",
             "Roadmarker2",
             "Environment",
-            "Doors",
             "Carpet",
+            "Doors",
             "Tables",
             "Shelves",
+            "Ontop",
         ]
         _layers.forEach((layer: string) => {
             const idx = layer.toLowerCase()
@@ -258,7 +262,7 @@ export class GameState extends State {
     updateBatteryIcon() {
         let i = Math.floor(this.energyReserve * 5 / 100)
         let css = `battery${i}`
-        log("Battery is", css)
+        // log("Battery is", css)
         let dom = window.document.getElementById("battery")
         if (!!dom) {
             dom.className = css
