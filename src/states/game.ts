@@ -21,6 +21,8 @@ export class GameState extends State {
     ai: AI
     music: Phaser.Sound
 
+    currentTrigger: Trigger
+
     _init = (map: string) => {
         // TODO: Select map to load
     }
@@ -64,7 +66,7 @@ export class GameState extends State {
 
     _update = () => {
         this.currentTile = this.getCurrentTile()
-        this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
+        // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
@@ -179,7 +181,7 @@ export class GameState extends State {
         this.map.setCollision([2045], true, "Collision", false)
         this.map.setCollisionBetween(2046, 2056/* TODO: Own Tilesheet */, true, "Tables", false)
 
-        this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 32, "player"))
+        this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 5 * this.map.tileHeight + 32, "player"))
         this.ref("player", "player").anchor.set(0.5)
         this.game.physics.enable(this.ref("player", "player"))
         this.ref("player", "player").body.collideWorldBounds = true
@@ -190,9 +192,7 @@ export class GameState extends State {
         this.ref("lights", "logo").height = 64
 
         this.layerManager.layer("dialog").addRef("dialog", new Dialog(this, 100, 40, "dialog"))
-        this.ref("dialog", "dialog").x = 100
-        this.ref("dialog", "dialog").y = 100
-        this.ref("dialog", "dialog").say("Hello")
+        this.ref("dialog", "dialog").setVisible(false)
     }
 
     setupInput() {
@@ -246,7 +246,15 @@ export class GameState extends State {
         let tile = this.currentTile
 
         this.triggers.forEach((trigger: Trigger) => {
-            trigger.trigger("position", {x: tile.x, y: tile.y}, this)
+            trigger.trigger("exit", {x: tile.x, y: tile.y}, this)
+        })
+
+        this.triggers.forEach((trigger: Trigger) => {
+            trigger.trigger("enter", {x: tile.x, y: tile.y}, this)
+        })
+
+        this.triggers.forEach((trigger: Trigger) => {
+            trigger.trigger("each", {x: tile.x, y: tile.y}, this)
         })
     }
 
@@ -326,5 +334,35 @@ export class GameState extends State {
 
     openDoor(x: number, y: number, tid: number) {
         this.replaceTile(x, y, tid, "Doors")
+    }
+
+    showDialogAbove(name: string, x: number, y: number, text: string) {
+        this.ref("dialog", name).say(text)
+        this.ref("dialog", name).aboveTileXY(x, y)
+        this.ref("dialog", name).setVisible(true)
+    }
+
+    hideDialog(name: string) {
+        this.ref("dialog", name).setVisible(false)
+    }
+
+    story(key: string) {
+        log(key, this.currentTrigger)
+        switch (key) {
+            case "tutorial0-enter":
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "Welcome to the game!")
+                break
+            case "tutorial0-exit":
+                this.hideDialog("dialog")
+                break
+            case "tutorial1-enter":
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "Papers on the floor can be very usefull ;)")
+                break
+            case "tutorial1-exit":
+                this.hideDialog("dialog")
+                break
+            default:
+                error(`Unhandled story action ${key} at ${trigger.x}, ${trigger.y}`)
+        }
     }
 }

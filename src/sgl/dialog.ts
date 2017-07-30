@@ -12,6 +12,10 @@ export class Dialog extends Phaser.Sprite {
     textHeight: number
     marginH: number = 5
     marginV: number = 5
+    cameraMarginH: number = 10
+    cameraMarginV: number = 10
+
+    inBoundCheck: boolean = false
 
     constructor(gameState: GameState, width: number, height: number, key: string) {
         super(gameState.game, 0, 0, key)
@@ -25,7 +29,7 @@ export class Dialog extends Phaser.Sprite {
         this.textHeight = this.height - this.marginV * 2
 
         let style = {
-            font: "20px Helvetica",
+            font: "16px Helvetica",
             fill: "#FAFAFA",
             wordWrap: false,
             align: "center",
@@ -42,6 +46,37 @@ export class Dialog extends Phaser.Sprite {
         this.height = this.text.height + this.marginV * 2
         this.text.position.x = this.x
         this.text.position.y = this.y
+        this.keepInBounds()
+    }
+
+    keepInBounds() {
+        if (this.inBoundCheck) {
+            return
+        }
+        this.inBoundCheck = true
+        let update = false
+        let me = new Phaser.Rectangle(this.xCorner - this.cameraMarginH, this.yCorner - this.cameraMarginV, this.width + 2 * this.cameraMarginH, this.height + 2 * this.cameraMarginV)
+        if (!this.game.camera.view.containsRect(me)) {
+            if (me.x < this.game.camera.view.x) {
+                me.x = this.game.camera.view.x + this.cameraMarginH
+                update = true
+            } else if (me.right > this.game.camera.view.right) {
+                me.x = this.game.camera.view.right - me.width + this.cameraMarginH
+                update = true
+            }
+            if (me.y < this.game.camera.view.y) {
+                me.y = this.game.camera.view.y + this.cameraMarginV
+                update = true
+            } else if (me.bottom > this.game.camera.view.bottom) {
+                me.y = this.game.camera.view.bottom - me.height + this.cameraMarginV
+                update = true
+            }
+            if (update) {
+                this.x = me.x + this.width / 2
+                this.y = me.y + this.height / 2
+            }
+        }
+        this.inBoundCheck = false
     }
 
     say(text: string) {
@@ -59,6 +94,10 @@ export class Dialog extends Phaser.Sprite {
         return this.position.x
     }
 
+    get xCorner() {
+        return this.position.x - this.width / 2
+    }
+
     set y(y: number) {
         this.position.y = y
         this.text.position.y = this.marginV + y
@@ -69,14 +108,33 @@ export class Dialog extends Phaser.Sprite {
         return this.position.y
     }
 
+    get yCorner() {
+        return this.position.y - this.height / 2
+    }
+
+    setPosition(x: number, y: number) {
+        this.inBoundCheck = true
+        this.x = x
+        this.y = y
+        this.inBoundCheck = false
+        this.updatePosition()
+    }
+
+    setVisible(visible: boolean) {
+        this.text.visible = visible
+        this.visible = visible
+    }
+
+    getVisible() {
+        return this.visible
+    }
+
     above(x: number, y: number, height?: number) {
         height = height || this.gameState.map.tileHeight
-        this.x = x
-        this.y = y - height
+        this.setPosition(x, y - height)
     }
 
     aboveTile(tile: Phaser.Tile) {
-        log(tile.worldX, tile.worldY, tile.centerX, tile.centerY)
         return this.above(tile.worldX + tile.centerX, tile.worldY + tile.centerY, tile.height)
     }
 

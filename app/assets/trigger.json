@@ -9,6 +9,18 @@
       }
     },
     {
+      "x": 1,
+      "y": 5,
+      "enter": "this.story('tutorial0-enter')",
+      "exit": "this.story('tutorial0-exit')"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "enter": "this.story('tutorial1-enter')",
+      "exit": "this.story('tutorial1-exit')"
+    },
+    {
       "x": 0,
       "y": 2,
       "enter": "console.log('Hi, House');this.questStuff();",
