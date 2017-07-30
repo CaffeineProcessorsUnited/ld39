@@ -207,12 +207,15 @@ export class GameState extends State {
             }, this)
         }
         this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
+            window.document.getElementById("led4")!.style.animationDuration = "500ms"
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keydown", trigger, event)
             })
+
         }
 
         this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
+            window.document.getElementById("led4")!.style.animationDuration = "0s"
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keyup", trigger, event)
             })
