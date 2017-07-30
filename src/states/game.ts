@@ -41,15 +41,15 @@ export class GameState extends State {
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
         this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
-        this.game.load.audio("car0", "assets/audio/car0.ogg")
-        this.game.load.audio("car1", "assets/audio/car1.ogg")
-        this.game.load.audio("car2", "assets/audio/car2.ogg")
-        this.game.load.audio("car3", "assets/audio/car3.ogg")
-        this.game.load.audio("walk0", "assets/audio/walk0.ogg")
-        this.game.load.audio("walk1", "assets/audio/walk1.ogg")
-        this.game.load.audio("walk2", "assets/audio/walk2.ogg")
-        this.game.load.audio("walk3", "assets/audio/walk3.ogg")
-        this.game.load.audio("walk4", "assets/audio/walk4.ogg")
+        range(0, 4).forEach((i: number) => {
+            this.loader.game.load.audio(`car${i}`, `assets/audio/car${i}.ogg`)
+        })
+        range(0, 4).forEach((i: number) => {
+            this.loader.game.load.audio(`snoring${i}`, `assets/audio/snoring${i}.ogg`)
+        })
+        range(0, 6).forEach((i: number) => {
+            this.loader.game.load.audio(`walk${i}`, `assets/audio/walk${i}.ogg`)
+        })
     }
     _create = () => {
 
@@ -325,7 +325,7 @@ export class GameState extends State {
         if (json !== null && typeof json.trigger === "object") {
             json.trigger.forEach((triggerData: any) => {
                 if (triggerData.x !== undefined && triggerData.y !== undefined) {
-                    this.triggers.push(new Trigger(triggerData))
+                    this.triggers.push(new Trigger(this, triggerData))
                 }
             })
         } else {
@@ -457,6 +457,26 @@ export class GameState extends State {
                 break
             case "tutorial1-exit":
                 this.hideDialog("dialog")
+                break
+            default:
+                error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
+        }
+    }
+
+    play(t: Trigger, key: string) {
+        switch (key) {
+            case "":
+                this.playSound("")
+                break
+            default:
+                error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
+        }
+    }
+
+    stop(t: Trigger, key: string) {
+        switch (key) {
+            case "":
+                this.stopSound("")
                 break
             default:
                 error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
