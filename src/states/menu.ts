@@ -2,11 +2,14 @@ import {log, State, range} from "../sgl/sgl"
 
 export class MenuState extends State {
 
-    ready: boolean = true// TODO: false
+    ready: boolean = false// TODO: false
+    booted: boolean = false
     text: Phaser.Text
     keys: Phaser.Sound[] = []
     margin: number = 20
     timePassed: number = 0
+    wait: number = 5000
+    debugCount: number = 0
 
     speed = {"0": 30, "1": 160, "2": 80 }
 
@@ -92,6 +95,7 @@ export class MenuState extends State {
         range(0, 8).forEach((i: number) => {
             this.loader.game.load.audio(`key${i}`, `assets/audio/key${i}.ogg`)
         })
+        this.loader.game.load.audio("drive", "assets/audio/drive.ogg")
     }
     _create = () => {
         this.text = this.loader.game.add.text(this.margin, this.margin, "", {
@@ -110,15 +114,21 @@ export class MenuState extends State {
             this.keys.push(this.game.add.audio(`key${i}`))
             this.keys[i].allowMultiple = true
         })
+        this.game.add.audio("drive").play()
     }
     _update = () => {
         if (this.ready) {
             this.changeState("game")
         }
-        // log(this.ready, this.timePassed, this.currentLine, this.currentActor, this.currentChar, this.currentText)
+        log(this.debugCount, this.currentText)
+        this.debugCount += this.game.time.elapsedMS
 
+        if (!this.booted && this.timePassed >= this.wait) {
+            this.booted = true
+            this.timePassed = 0
+        }
 
-        if (this.currentActor >= 0 && this.timePassed >= this.speed[this.currentActor]) {
+        if (this.booted && this.currentActor >= 0 && this.timePassed >= this.speed[this.currentActor]) {
             this.timePassed = 0
             if (this.currentLine >= this.consoleText.length) {
                 this.ready = true
