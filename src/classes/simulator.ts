@@ -64,13 +64,19 @@ export class Simulator {
         if (type === AIType.VEHICLE) {
             paths = [
                 {
-                    "spawn": new Phaser.Point(0, 0),
+                    "spawn": new Phaser.Point(75, 59),
                     "targets": [
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(0, 1)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 1)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 3)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(5, 3)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(5, 0)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(75, 53)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(3, 53)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(3, 59)),
+                    ],
+                },
+                {
+                    "spawn": new Phaser.Point(8, 59),
+                    "targets": [
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(8, 57)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(71, 57)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(71, 59)),
                     ],
                 },
             ]

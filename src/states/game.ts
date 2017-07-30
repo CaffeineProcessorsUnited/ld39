@@ -419,9 +419,9 @@ export class GameState extends State {
         this.music.play()
     }
 
-    stopSound(key: string, loop: boolean = false) {
+    stopSound(key: string, duration: number = 1000) {
         if (this.music !== undefined) {
-            this.music.fadeOut(1)
+            this.music.fadeOut(duration)
         }
     }
 
@@ -466,10 +466,12 @@ export class GameState extends State {
                 break
             case "unlock-mensa":
                 this.unlockLevel(LEVEL.MENSA)
+                this.spreadPlayers(LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked mensa")
                 break
             case "unlock-library":
                 this.unlockLevel(LEVEL.LIBRARY)
+                this.spreadPlayers(LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked library")
                 break
             case "message-under-construction-enter":
@@ -519,28 +521,38 @@ export class GameState extends State {
 
     play(t: Trigger, key: string) {
         switch (key) {
-            case "":
-                this.playSound("")
+            case "dark_mix":
+                this.playSound("dark_mix", true)
                 break
             default:
-                error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
+                error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
         }
     }
 
     stop(t: Trigger, key: string) {
         switch (key) {
-            case "":
-                this.stopSound("")
+            case "dark_mix":
+                this.stopSound("dark_mix", 1)
                 break
             default:
-                error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
+                error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
         }
     }
 
     getTilesForType(id: number, layer?: string): Phaser.Point[] {
         return this.map.tiles
             .filter((tile: Phaser.Tile) => {
-                return tile.index === id && nou(layer) ? true : tile.layer.name === layer
+                if (tile.index !== id) {
+                    return false
+                }
+                if (nou(layer)) {
+                    return true
+                }
+                if (nou(tile.layer)) {
+                    return false
+                }
+                return tile.layer.name === layer
+
             })
             .map((tile: Phaser.Tile) => new Phaser.Point(tile.x, tile.y))
     }
@@ -553,7 +565,21 @@ export class GameState extends State {
             }
             // TODO: Set correct ID
             switch (tile.index) {
-                case 9999:
+                case 1630:
+                case 1631:
+                case 1632:
+                case 1655:
+                case 1681:
+                case 1684:
+                case 1707:
+                case 1708:
+                case 1710:
+                case 1717:
+                case 1718:
+                case 1735:
+                case 1763:
+                case 1764:
+                case 1766:
                     return true
                 default:
                     return false
@@ -577,34 +603,34 @@ export class GameState extends State {
         }
     }
 
-    spawnPlayer(tiles: Phaser.Point[], types: AIType[]) {
+    spawnPlayer(tiles: Phaser.Point[], types: AIType[], state: AIState) {
         let tile = choose(tiles)
         let type = choose(types)
-        let ai = new AI(type, this)
-        ai.setTilePosition(tile)
-        throw new Error("USE THE SIMULATOR")
+        this.simulator.spawn(type, state, tile)
     }
 
     spreadPlayers(level: number) {
         let points = this.getTilesForLevel(level)
-        const type = [
-            AIType.STANDING,
-            AIType.GUARD,
-            AIType.WORKING,
-            AIType.PROF,
-        ]
+        if (points.length > 0) {
+            const type = [
+                AIType.STANDING,
+                AIType.GUARD,
+                AIType.WORKING,
+                AIType.PROF,
+            ]
 
-        // Spawn generic people
-        range(0, 10).forEach(() => this.spawnPlayer(points, type))
+            // Spawn generic people
+            range(0, 10).forEach(() => this.spawnPlayer(points, type, AIState.STROLL))
 
 
-        if (level === LEVEL.PARKINGLOT) {
+            if (level === LEVEL.PARKINGLOT) {
 
-        } else if (level === LEVEL.MENSA ||
-            level === LEVEL.LIBRARY ||
-            level === LEVEL.PCPOOL) {
-            let chairs = this.getChairTiles(points)
-            range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING]))
+            } else if (level === LEVEL.MENSA ||
+                level === LEVEL.LIBRARY ||
+                level === LEVEL.PCPOOL) {
+                let chairs = this.getChairTiles(points)
+                range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+            }
         }
     }
 }
