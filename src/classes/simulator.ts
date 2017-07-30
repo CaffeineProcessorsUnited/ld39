@@ -6,22 +6,23 @@ import {Pathfinder} from "./pathfinder"
 export class Simulator {
     gameState: GameState
     entities: { [index: string]: AI[] } = {}
+    reservedTiles: { [index: string]: AI } = {}
 
     constructor(gameState: GameState) {
         this.gameState = gameState
     }
 
-    spawn(type: AIType, state: AIState, spawn?: Phaser.Point) {
+    spawn(type: AIType, state: AIState, spawn?: Phaser.Point, reserved?: Phaser.Point) {
         if (nou(this.entities[type.valueOf()])) {
             this.entities[type.valueOf()] = []
         }
-        let i = this.entities[type.valueOf()].push(new AI(type, this.gameState)) - 1
+        let i = this.entities[type.valueOf()].push(new AI(this, type)) - 1
         this.entities[type.valueOf()][i].state = state
-        this.respawn(this.entities[type.valueOf()][i], spawn)
+        this.respawn(this.entities[type.valueOf()][i], spawn, reserved)
 
     }
 
-    respawn(object: AI, spawn?: Phaser.Point) {
+    respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point) {
         let type = object.type
         let state = object.state
         switch (type) {
@@ -30,7 +31,10 @@ export class Simulator {
             case AIType.SLEEPING:
             case AIType.WORKING:
             case AIType.VEHICLE:
-                object.reserveTile()
+                let tile = object.reserveTile(reserved)
+                if (!nou(tile)) {
+                    this.reservedTiles[tile!.toString()] = object
+                }
                 break
             default:
                 // No static place
@@ -77,13 +81,13 @@ export class Simulator {
         } else {
             paths = [
                 {
-                    "spawn": new Phaser.Point(0, 0),
+                    "spawn": new Phaser.Point(77, 59),
                 },
                 {
-                    "spawn": new Phaser.Point(1, 0),
+                    "spawn": new Phaser.Point(78, 59),
                 },
                 {
-                    "spawn": new Phaser.Point(2, 0),
+                    "spawn": new Phaser.Point(79, 59),
                 },
             ]
         }

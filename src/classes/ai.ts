@@ -2,6 +2,7 @@ import {error, log, nou} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
+import {Simulator} from "./simulator";
 
 export enum AIState {
     IDLE,
@@ -27,6 +28,7 @@ export enum AIType {
 
 export class AI {
     sprite: Phaser.Sprite
+    simulator: Simulator
     speed: number
     maxSpeed: number
     reactionDelay: number
@@ -37,6 +39,7 @@ export class AI {
     onPathCompleteHandler: () => void
     spriteSound: Phaser.Sound
     spawnPoint: Phaser.Point
+    canBeRobbed: boolean
     private gameState: GameState
     private player: any
     private tileSize: number
@@ -50,12 +53,16 @@ export class AI {
     private targetY: number
     private armLength: number
     private maxWalkDistance: number
+    private replacedTile: number
+    private goHome: IncRand
 
-    constructor(type: AIType, gameState: GameState) {
-        this.gameState = gameState
+    constructor(simulator: Simulator, type: AIType) {
+        this.simulator = simulator
+        this.gameState = this.simulator.gameState
         this.pathfinder = new Pathfinder(this, this.gameState)
         this.plannedPoints = []
         this.currentPoint = 0
+        this.canBeRobbed = true
 
         this.type = type
         this.speed = 0
@@ -73,7 +80,8 @@ export class AI {
                 this.alert = 0
                 this.armLength = 0
                 this.maxWalkDistance = 0
-                this.giveUp = new IncRand(0, 0, 0)
+                this.giveUp = new IncRand(0, 0, 0, true)
+                this.goHome = new IncRand(0, 0, 0, true)
                 spriteKey = "dummy"
                 break
             case AIType.STANDING:
@@ -84,6 +92,7 @@ export class AI {
                 this.armLength = 30
                 this.maxWalkDistance = 20
                 this.giveUp = new IncRand(0.02, 8, 30)
+                this.goHome = new IncRand(0.02, 20, 300)
                 spriteKey = "standing"
                 break
             case AIType.GUARD:
@@ -94,6 +103,7 @@ export class AI {
                 this.armLength = 40
                 this.maxWalkDistance = 30
                 this.giveUp = new IncRand(0.01, 10, 50)
+                this.goHome = new IncRand(0, 0, 0, true)
                 spriteKey = "guard"
                 break
             case AIType.PROF:
@@ -104,6 +114,7 @@ export class AI {
                 this.armLength = 25
                 this.maxWalkDistance = 15
                 this.giveUp = new IncRand(0.04, 6, 20)
+                this.goHome = new IncRand(0.01, 120, 600)
                 spriteKey = "prof"
                 break
             case AIType.EATING:
@@ -113,6 +124,7 @@ export class AI {
                 this.armLength = 30
                 this.maxWalkDistance = 8
                 this.giveUp = new IncRand(0.04, 6, 10)
+                this.goHome = new IncRand(0.01, 100, 300)
                 spriteKey = "eating"
                 break
             case AIType.LEARNING:
@@ -122,6 +134,7 @@ export class AI {
                 this.armLength = 30
                 this.maxWalkDistance = 17
                 this.giveUp = new IncRand(0.03, 10, 20)
+                this.goHome = new IncRand(0.03, 100, 300)
                 spriteKey = "learning"
                 break
             case AIType.WORKING:
@@ -131,6 +144,7 @@ export class AI {
                 this.armLength = 30
                 this.maxWalkDistance = 10
                 this.giveUp = new IncRand(0.03, 10, 16)
+                this.goHome = new IncRand(0.02, 120, 300)
                 spriteKey = "working"
                 break
             case AIType.SLEEPING:
@@ -140,6 +154,7 @@ export class AI {
                 this.armLength = 25
                 this.maxWalkDistance = 5
                 this.giveUp = new IncRand(0.05, 2, 10)
+                this.goHome = new IncRand(0.02, 100, 300)
                 spriteKey = "sleeping"
                 break
             case AIType.VEHICLE:
@@ -149,6 +164,7 @@ export class AI {
                 this.armLength = 10
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0)
+                this.goHome = new IncRand(0.06, 20, 300)
                 spriteKey = "vehicle"
                 break
             default:
@@ -172,6 +188,10 @@ export class AI {
         this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         this.pathfinder.setCurrent(this.position)
 
+        if (this.state === AIState.SITTING && this.goHome.getRand()) {
+            this.standUp()
+        }
+
         if (this.state === AIState.CHASING) {
             if (this.plannedPoints.length > this.maxWalkDistance) {
                 this.setStroll()
@@ -179,6 +199,7 @@ export class AI {
 
             if (this.canReach()) {
                 log("CLUB")
+                this.canBeRobbed = true
                 if (this.type === AIType.VEHICLE) {
                     this.gameState.clubPlayer(40)
                 } else {
@@ -229,6 +250,21 @@ export class AI {
                 }
             } else {
                 this.speed = 0
+                switch (this.type) {
+                    case AIType.LEARNING:
+                    case AIType.EATING:
+                    case AIType.SLEEPING:
+                    case AIType.WORKING:
+                        if (this.state !== AIState.SITTING) {
+                            this.sitDown(this.position.x, this.position.y)
+                        }
+                        break
+                    case AIType.VEHICLE:
+                        if (this.state === AIState.PARKING) {
+                            this.sitDown(this.position.x, this.position.y)
+                        }
+                        break
+                }
             }
         }
 
@@ -340,8 +376,12 @@ export class AI {
     }
 
     pickPocket() {
+        if (!this.canBeRobbed) {
+            return
+        }
         const rand = Math.random() * 100
         if (rand < this.alert) {
+            this.canBeRobbed = false
             this.setChasing()
         }
     }
@@ -399,8 +439,18 @@ export class AI {
         this.position.x = tile.worldX + tile.centerX
         this.position.y = tile.worldY + tile.centerY
         this.state = AIState.SITTING
+        this.replacedTile = tile.index
         log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
         this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
+    }
+
+    standUp() {
+        let tile = this.pathfinder.pos2tile(this.position)
+        this.state = AIState.IDLE
+        this.canBeRobbed = false
+        log(`Replace tile id ${this.getTileId()} with ${this.replacedTile} at ${tile.x}, ${tile.y}`)
+        this.gameState.map.replace(this.getTileId(), this.replacedTile, tile.x, tile.y, 1, 1, "Tables")
+        this.setTarget(this.spawnPoint.x, this.spawnPoint.y)
     }
 
     clearTimeout() {
@@ -453,7 +503,11 @@ export class AI {
         this.currentPoint = 0
     }
 
-    reserveTile() {
+    reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
+        if (nou(tile)) {
+            this.reservedTile = tile
+            return tile
+        }
         switch (this.type) {
             case AIType.LEARNING:
             case AIType.EATING:
@@ -463,8 +517,10 @@ export class AI {
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
-                    //this.gameState.getTilesForType(1, "Road")
-                    this.reservedTile = new Phaser.Point(6, 6)
+                    let tiles = this.gameState.getTilesForType(1438, "Road")
+                    if (tiles.length > 0) {
+
+                    }
                     log(this.reservedTile)
                 }
                 break
@@ -472,6 +528,7 @@ export class AI {
                 // No static place
                 break
         }
+        return this.reservedTile
     }
 
     setTilePosition(tile: Phaser.Point) {

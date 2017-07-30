@@ -11,7 +11,7 @@ export class MenuState extends State {
     wait: number = 5000
     debugCount: number = 0
 
-    speed = {"0": 30, "1": 160, "2": 80 }
+    speed: any = {"0": 30, "1": 160, "2": 80 }
 
     currentLine: number = 0
     currentActor: number = -1
@@ -20,7 +20,7 @@ export class MenuState extends State {
     currentText: string = ""
 
     // 0 == output from the system, 1 == input from the user
-    consoleText: { "0": string, "1": string }[] = [
+    consoleText: any[] = [
         {
             "0": this.pre("~"),
             "1": "cd ld39\n",

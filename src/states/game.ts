@@ -70,6 +70,10 @@ export class GameState extends State {
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(10, 10))
+        // this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
 
         setTimeout(() => {
             //this.npc[0].sitDown(125, 125)
@@ -84,7 +88,6 @@ export class GameState extends State {
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
-
 
         // movement
         let damping = 100
