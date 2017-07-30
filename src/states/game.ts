@@ -80,7 +80,7 @@ export class GameState extends State {
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
 
 
-        //movement
+        // movement
         let damping = 100
         let max = 200
         let rate = 80
@@ -179,7 +179,7 @@ export class GameState extends State {
         }
 
         if (this.energyReserve <= 0) {
-            log("game över")
+            // log("game över")
             this.changeState("menu")
         }
     }
@@ -425,13 +425,13 @@ export class GameState extends State {
     }
 
     replaceTile(x: number, y: number, tid: number, layer?: string) {
-        const curTile = this.map.getTile(x, y, layer).index
-        this.map.replace(curTile, tid, x, y, 1, 1, layer)
+        this.map.putTile(tid, x, y, layer)
     }
 
     openDoor(x: number, y: number, tid: number, level: number) {
         if (this.unlockedLevel[level]) {
             this.replaceTile(x, y, tid, "Doors")
+            this.replaceTile(x, y, -1, "Collision")
         }
     }
 
@@ -463,6 +463,54 @@ export class GameState extends State {
                 break
             case "tutorial1-exit":
                 this.hideDialog("dialog")
+                break
+            case "unlock-mensa":
+                this.unlockLevel(LEVEL.MENSA)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "Unlocked mensa")
+                break
+            case "unlock-library":
+                this.unlockLevel(LEVEL.LIBRARY)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "Unlocked library")
+                break
+            case "message-under-construction-enter":
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "Under construction")
+                break
+            case "message-under-construction-exit":
+                this.hideDialog("dialog")
+                break
+            case "opendoor-mensa-upper":
+                this.openDoor(40, 19, 455, LEVEL.MENSA)
+                this.openDoor(41, 19, 455, LEVEL.MENSA)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "opendoor-mensa-lower":
+                this.openDoor(51, 27, 455, LEVEL.MENSA)
+                this.openDoor(51, 28, 455, LEVEL.MENSA)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "opendoor-mensa-inner":
+                this.openDoor(65, 9, 455, LEVEL.MENSA)
+                this.openDoor(65, 10, 455, LEVEL.MENSA)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "opendoor-mensa-exit":
+                this.openDoor(79, 36, 455, LEVEL.MENSA)
+                this.openDoor(79, 37, 455, LEVEL.MENSA)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "opendoor-library-upper":
+                this.openDoor(92, 39, 455, LEVEL.LIBRARY)
+                this.openDoor(93, 39, 455, LEVEL.LIBRARY)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "opendoor-library-lower":
+                this.openDoor(90, 41, 455, LEVEL.LIBRARY)
+                this.openDoor(90, 42, 455, LEVEL.LIBRARY)
+                this.showDialogAbove("dialog", this.currentTrigger.x, this.currentTrigger.y, "HODOR")
+                break
+            case "teleport":
+                this.ref("player", "player").position.x = 79 * this.map.tileWidth
+                this.ref("player", "player").position.y = 37 * this.map.tileHeight
                 break
             default:
                 error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
@@ -538,6 +586,5 @@ export class GameState extends State {
             let chairs = this.getChairTiles(points)
             range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING]))
         }
-
     }
 }

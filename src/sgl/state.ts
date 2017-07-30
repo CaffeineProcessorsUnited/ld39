@@ -136,7 +136,7 @@ export abstract class State extends Phaser.State implements IState {
      Additional parameters will be passed to init function of the state
      **/
     changeState(name: string, ...additionalParameters: any[]) {
-        log("changing state to " + name)
+        // log("changing state to " + name)
         this.fadeOut(() => {
             let args = [
                 name,
