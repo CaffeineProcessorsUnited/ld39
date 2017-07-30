@@ -78,9 +78,9 @@ export class GameState extends State {
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
-        if (this.energyReserve < 0) {
-            this.gameOver()
-        }
+
+
+        //movement
         let damping = 100
         let max = 200
         let rate = 80
@@ -176,6 +176,11 @@ export class GameState extends State {
         } else {
             batled.style.fill = "lime"
             batled.style.animationDuration = "0s"
+        }
+
+        if (this.energyReserve <= 0) {
+            log("game över")
+            this.changeState("menu")
         }
     }
     _render = () => {
@@ -367,7 +372,8 @@ export class GameState extends State {
     }
 
     gameOver() {
-        // console.log("GAME OVER")
+        //console.log("GAME OVER")
+        this.changeState("menu")
     }
 
     clubPlayer(amount: number) {
