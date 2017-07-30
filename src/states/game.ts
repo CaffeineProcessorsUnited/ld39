@@ -85,13 +85,18 @@ export class GameState extends State {
         if (this.ref("player", "player").body.velocity.y <= max * -1) {this.ref("player", "player").body.velocity.y = max * -1}
 
 
-        if (this.cursors.left.isDown || this.cursors.right.isDown || this.cursors.up.isDown || this.cursors.down.isDown) {
             if (this.cursors.left.isDown) {
                 this.ref("player", "player").body.velocity.x -= rate
                 // this.ref("player", "player").animations.play("left")
             } else if (this.cursors.right.isDown) {
                 this.ref("player", "player").body.velocity.x += rate
                 // this.ref("player", "player").animations.play("right")
+            } else {
+                if (this.ref("player", "player").body.velocity.x >= damping){
+                    this.ref("player", "player").body.velocity.x -= damping
+                } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
+                    this.ref("player", "player").body.velocity.x += damping
+                } else {this.ref("player", "player").body.velocity.x = 0}
             }
 
             if (this.cursors.up.isDown) {
@@ -100,24 +105,14 @@ export class GameState extends State {
             } else if (this.cursors.down.isDown) {
                 this.ref("player", "player").body.velocity.y += rate
                 // this.ref("player", "player").animations.play("down")
-            }
-        } else {
+            } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
-
-            if (this.ref("player", "player").body.velocity.x >= damping){
-                this.ref("player", "player").body.velocity.x -= damping
-            } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
-                this.ref("player", "player").body.velocity.x += damping
-            }
-            else {this.ref("player", "player").body.velocity.x = 0}
-
-            if (this.ref("player", "player").body.velocity.y >= damping){
-                this.ref("player", "player").body.velocity.y -= damping
-            } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
-                this.ref("player", "player").body.velocity.y += damping
-            }
-            else {this.ref("player", "player").body.velocity.y = 0}
+                if (this.ref("player", "player").body.velocity.y >= damping){
+                    this.ref("player", "player").body.velocity.y -= damping
+                } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
+                    this.ref("player", "player").body.velocity.y += damping
+                } else {this.ref("player", "player").body.velocity.y = 0}
         }
 
         this.trigger()
