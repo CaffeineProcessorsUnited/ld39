@@ -151,8 +151,9 @@
       "x":77,
       "y":21,
       "keypress":{
-        "Space":"sound:dark_mix"
-      }
+        "Space":"play:dark_mix"
+      },
+      "exit":"stop:dark_mix"
     },
     {
       "x":9,
