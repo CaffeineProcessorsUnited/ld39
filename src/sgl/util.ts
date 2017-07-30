@@ -24,3 +24,7 @@ export function override(container: any, key: string) {
 export function minmax(val: number, low: number, high: number) {
     return Math.min(Math.max(val, low), high)
 }
+
+export function nou(o: any) {
+    return o === null || o === undefined
+}

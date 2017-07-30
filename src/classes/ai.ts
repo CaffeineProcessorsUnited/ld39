@@ -1,10 +1,7 @@
-import {log, error} from "../sgl/sgl"
+import {error, log, nou} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
-import {AStar} from "./astar"
 import {Pathfinder} from "./pathfinder"
-import {isNullOrUndefined} from "util"
-
 
 export enum AIState {
     IDLE,
@@ -26,27 +23,24 @@ export enum AIType {
 }
 
 export class AI {
+    sprite: Phaser.Sprite
+    speed: number
+    maxSpeed: number
+    reactionDelay: number
+    state: AIState
+    type: AIType
+    alert: number
     private gameState: GameState
     private player: any
     private tileSize: number
     private giveUp: IncRand
     private speedUp: IncRand
-    private timeout: number
-
+    private timeout?: number
     private pathfinder: Pathfinder
     private plannedPoints: Phaser.Point[]
     private currentPoint: number
     private targetX: number
     private targetY: number
-
-    sprite: Phaser.Sprite
-    speed: number
-    maxSpeed: number
-    reactionDelay: number
-
-    state: AIState
-    type: AIType
-    alert: number
 
     constructor(type: AIType, gameState: GameState) {
         this.gameState = gameState
@@ -124,6 +118,10 @@ export class AI {
         this.gameState.game.physics.enable(this.sprite)
         this.sprite.body.collideWorldBounds = true
         this.player = this.gameState.ref("player", "player")
+    }
+
+    get position(): Phaser.Point {
+        return this.sprite.position
     }
 
     update() {
@@ -231,25 +229,6 @@ export class AI {
         this.doChase(3)
     }
 
-    private doChase(delay: number) {
-        this.async(() => {
-            this.state = AIState.CHASING
-            this.speed = this.maxSpeed
-            this.giveUp.reset()
-            this.speedUp.reset()
-        }, delay * 1000)
-    }
-
-    private doStroll(delay: number) {
-        this.async(() => {
-            this.state = AIState.STROLL
-            this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
-            this.setTarget(
-                this.targetX + Math.round(Math.random() * 4 - 2) * this.tileSize,
-                this.targetY + Math.round(Math.random() * 4 - 2) * this.tileSize)
-        }, delay * 1000)
-    }
-
     setIdle() {
         this.clearTimeout()
         this.state = AIState.IDLE
@@ -290,8 +269,8 @@ export class AI {
 
     sitDown(x: number, y: number) {
         let tile = this.gameState.getTileAt(x, y, "Tables")
-        if (isNullOrUndefined(tile)) {
-            error("Can't sit down at ${x}, ${y} because it hast no tile to replace")
+        if (nou(tile)) {
+            error(`Can't sit down at ${x}, ${y} because it has no tile to replace`)
             return
         }
         this.position.x = tile.worldX + tile.centerX
@@ -309,16 +288,10 @@ export class AI {
 
     async(func: Function, delta: number) {
         this.clearTimeout()
-        this.timeout = setTimeout(
-            () => {
-                this.timeout = undefined
-                func()
-            }, delta
-        )
-    }
-
-    get position(): Phaser.Point {
-        return this.sprite.position
+        this.timeout = window.setTimeout(() => {
+            this.timeout = undefined
+            func()
+        }, delta)
     }
 
     setTarget(x: number, y: number) {
@@ -346,5 +319,24 @@ export class AI {
     newTargets(pos: Phaser.Point[]) {
         this.plannedPoints = pos
         this.currentPoint = 0
+    }
+
+    private doChase(delay: number) {
+        this.async(() => {
+            this.state = AIState.CHASING
+            this.speed = this.maxSpeed
+            this.giveUp.reset()
+            this.speedUp.reset()
+        }, delay * 1000)
+    }
+
+    private doStroll(delay: number) {
+        this.async(() => {
+            this.state = AIState.STROLL
+            this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
+            this.setTarget(
+                this.targetX + Math.round(Math.random() * 4 - 2) * this.tileSize,
+                this.targetY + Math.round(Math.random() * 4 - 2) * this.tileSize)
+        }, delay * 1000)
     }
 }
