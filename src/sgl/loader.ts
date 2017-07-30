@@ -132,7 +132,7 @@ export class Loader {
         this.game.scale.setGameSize(screen.width, screen.height);
         (<State>this.game.state.getCurrentState()).stateResize(screen.width, screen.height)
 
-        let battery = window.document.getElementById("battery")
+        let battery = window.document.getElementById("battery")!
         let laptopfront = window.document.getElementById("batpos")!.getBoundingClientRect()
         battery.style.left = laptopfront.left + laptopfront.width * 0.1 + "px"
         battery.style.top = laptopfront.top + laptopfront.height * 0.25 + "px"

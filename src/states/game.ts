@@ -59,7 +59,7 @@ export class GameState extends State {
 
         setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
 
-        window.document.getElementById("led3").style.animationDuration = "4s"
+        window.document.getElementById("led3")!.style.animationDuration = "4s"
     }
 
     _update = () => {
@@ -104,15 +104,15 @@ export class GameState extends State {
 
 
 
-        let batled = window.document.getElementById("led2")
+        let batled = window.document.getElementById("led2")!
         if (this.energyReserve <= 0) {
             batled.style.fill = "#cccccc"
             batled.style.animationDuration = "0s"
-            window.document.getElementById("led1").style.fill = "#cccccc"
-            window.document.getElementById("led3").style.fill = "#cccccc"
-            window.document.getElementById("led3").style.animationDuration = "0s"
-            window.document.getElementById("led4").style.fill = "#cccccc"
-            window.document.getElementById("led4").style.animationDuration = "0s"
+            window.document.getElementById("led1")!.style.fill = "#cccccc"
+            window.document.getElementById("led3")!.style.fill = "#cccccc"
+            window.document.getElementById("led3")!.style.animationDuration = "0s"
+            window.document.getElementById("led4")!.style.fill = "#cccccc"
+            window.document.getElementById("led4")!.style.animationDuration = "0s"
 
         } else if (this.energyReserve < 10) {
             batled.style.animationName = "blink-red"
