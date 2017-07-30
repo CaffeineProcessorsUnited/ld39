@@ -100,6 +100,7 @@ export class GameState extends State {
         this.ai.update()
         let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
         this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
+        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))

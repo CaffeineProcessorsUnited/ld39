@@ -3,7 +3,6 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {AStar} from "./astar"
 import {Pathfinder} from "./pathfinder"
-import {isNullOrUndefined} from "util"
 
 
 export enum AIState {
