@@ -26,6 +26,7 @@ export class GameState extends State {
     unlockedLevel: boolean[] = [false, false, false]
     currentTrigger: Trigger
     simulator: Simulator
+    speedBoost: boolean
     _init = (map: string) => {
         // TODO: Select map to load
     }
@@ -96,6 +97,10 @@ export class GameState extends State {
         let damping = 100
         let max = 200
         let rate = 80
+        if (this.speedBoost) {
+            max = 1000
+            rate = 900
+        }
 
         if (this.ref("player", "player").body.velocity.x >= max) {
             this.ref("player", "player").body.velocity.x = max
@@ -303,6 +308,9 @@ export class GameState extends State {
         }
         this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
             window.document.getElementById("led4")!.style.animationDuration = "500ms"
+            if (event.shiftKey) {
+                this.speedBoost = true
+            }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keydown", trigger, event)
             })
@@ -311,6 +319,9 @@ export class GameState extends State {
 
         this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
             window.document.getElementById("led4")!.style.animationDuration = "0s"
+            if (!event.shiftKey) {
+                this.speedBoost = false
+            }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keyup", trigger, event)
             })
