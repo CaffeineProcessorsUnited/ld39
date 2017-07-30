@@ -50,6 +50,9 @@ export class GameState extends State {
         range(0, 6).forEach((i: number) => {
             this.loader.game.load.audio(`walk${i}`, `assets/audio/walk${i}.ogg`)
         })
+        range(0, 8).forEach((i: number) => {
+            this.loader.game.load.audio(`piano${i}`, `assets/audio/piano${i}.ogg`)
+        })
     }
     _create = () => {
 
@@ -413,7 +416,7 @@ export class GameState extends State {
         return coll
     }
 
-    playSound(key: string, loop: boolean = false) {
+    playSound(name: string, key: string, loop: boolean = false) {
         if (this.music !== undefined) {
             this.music.fadeOut(1)
         }
@@ -524,8 +527,11 @@ export class GameState extends State {
 
     play(t: Trigger, key: string) {
         switch (key) {
-            case "dark_mix":
-                this.playSound("dark_mix", true)
+            case "piano-low":
+                this.playSound("piano", `piano${choose([4, 5, 6, 7])}`, true)
+                break
+            case "piano-high":
+                this.playSound("piano", `piano${choose([0, 1, 2, 3])}`, true)
                 break
             default:
                 error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
@@ -534,8 +540,9 @@ export class GameState extends State {
 
     stop(t: Trigger, key: string) {
         switch (key) {
-            case "dark_mix":
-                this.stopSound("dark_mix", 1)
+            case "piano-low":
+            case "piano-high":
+                this.playSound("piano", true)
                 break
             default:
                 error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
