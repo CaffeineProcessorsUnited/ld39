@@ -2,7 +2,7 @@ import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
 import {AStar} from "../classes/astar"
-import {choose, range} from "../sgl/util"
+import {choose, nou, range} from "../sgl/util"
 
 enum LEVEL {
     PARKINGLOT,
@@ -438,10 +438,12 @@ export class GameState extends State {
         }
     }
 
-    getTilesForType(id: number): Phaser.Point[] {
+    getTilesForType(id: number, layer?: string): Phaser.Point[] {
         return this.map.tiles
-            .filter((value: Phaser.Tile) => value.index === id)
-            .map((value: Phaser.Tile) => new Phaser.Point(value.x, value.y))
+            .filter((tile: Phaser.Tile) => {
+                return tile.index === id && nou(layer) ? true : tile.layer.name === layer
+            })
+            .map((tile: Phaser.Tile) => new Phaser.Point(tile.x, tile.y))
     }
 
     getChairTiles(tiles: Phaser.Point[]): Phaser.Point[] {
