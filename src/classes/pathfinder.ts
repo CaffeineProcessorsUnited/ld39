@@ -22,7 +22,7 @@ export class Pathfinder {
     constructor(npc: AI, gs: GameState) {
         this.npc = npc
         this.gs = gs
-        this.interval = setInterval(this.onUpdate.bind(this), 100)
+        this.interval = setInterval(this.onUpdate.bind(this), 250)
     }
 
     setCurrent(pos: Phaser.Point) {
@@ -38,16 +38,24 @@ export class Pathfinder {
     }
 
     tile2pos(tile: Phaser.Point): Phaser.Point {
-        return new Phaser.Point(
-            tile.x * this.gs.map.tileWidth + this.gs.map.tileWidth / 2,
-            tile.y * this.gs.map.tileHeight + this.gs.map.tileHeight / 2
-        )
+        return Pathfinder.tile2pos(this.gs, tile)
     }
 
     pos2tile(pos: Phaser.Point): Phaser.Point {
+        return Pathfinder.pos2tile(this.gs, pos)
+    }
+
+    static tile2pos(gameState: GameState, tile: Phaser.Point): Phaser.Point {
         return new Phaser.Point(
-            Math.floor(pos.x / this.gs.map.tileWidth),
-            Math.floor(pos.y / this.gs.map.tileHeight)
+            tile.x * gameState.map.tileWidth + gameState.map.tileWidth / 2,
+            tile.y * gameState.map.tileHeight + gameState.map.tileHeight / 2,
+        )
+    }
+
+    static pos2tile(gameState: GameState, pos: Phaser.Point): Phaser.Point {
+        return new Phaser.Point(
+            Math.floor(pos.x / gameState.map.tileWidth),
+            Math.floor(pos.y / gameState.map.tileHeight),
         )
     }
 
@@ -70,7 +78,7 @@ export class Pathfinder {
             this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
             this.plannedPos.push(this.targetPos)
 
-            this.npc.newTargets(this.plannedPos)
+            this.npc.newTargets(this.plannedPos.slice(1))
             this.dirty = false
         }
     }

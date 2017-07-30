@@ -9,6 +9,8 @@ export enum AIState {
     TALKING,
     CHASING,
     SITTING,
+    DRIVING,
+    PARKING,
 }
 
 export enum AIType {
@@ -20,6 +22,7 @@ export enum AIType {
     LEARNING,
     WORKING,
     SLEEPING,
+    VEHICLE,
 }
 
 export class AI {
@@ -30,6 +33,8 @@ export class AI {
     state: AIState
     type: AIType
     alert: number
+    reservedTile: Phaser.Point
+    onPathCompleteHandler: () => void
     private gameState: GameState
     private player: any
     private tileSize: number
@@ -41,6 +46,8 @@ export class AI {
     private currentPoint: number
     private targetX: number
     private targetY: number
+    private armLength: number
+    private maxWalkDistance: number
 
     constructor(type: AIType, gameState: GameState) {
         this.gameState = gameState
@@ -62,6 +69,9 @@ export class AI {
                 this.maxSpeed = 0
                 this.reactionDelay = 0
                 this.alert = 0
+                this.armLength = 0
+                this.maxWalkDistance = 0
+                this.giveUp = new IncRand(0, 0, 0)
                 spriteKey = "dummy"
                 break
             case AIType.STANDING:
@@ -69,6 +79,9 @@ export class AI {
                 this.reactionDelay = 0.5
                 this.state = AIState.STROLL
                 this.alert = 20
+                this.armLength = 30
+                this.maxWalkDistance = 20
+                this.giveUp = new IncRand(0.02, 8, 30)
                 spriteKey = "standing"
                 break
             case AIType.GUARD:
@@ -76,6 +89,9 @@ export class AI {
                 this.reactionDelay = 0.2
                 this.state = AIState.STROLL
                 this.alert = 90
+                this.armLength = 40
+                this.maxWalkDistance = 30
+                this.giveUp = new IncRand(0.01, 10, 50)
                 spriteKey = "guard"
                 break
             case AIType.PROF:
@@ -83,31 +99,55 @@ export class AI {
                 this.reactionDelay = 1.2
                 this.state = AIState.STROLL
                 this.alert = 50
+                this.armLength = 25
+                this.maxWalkDistance = 15
+                this.giveUp = new IncRand(0.04, 6, 20)
                 spriteKey = "prof"
                 break
             case AIType.EATING:
                 this.maxSpeed = 1
                 this.reactionDelay = 1
                 this.alert = 30
+                this.armLength = 30
+                this.maxWalkDistance = 8
+                this.giveUp = new IncRand(0.04, 6, 10)
                 spriteKey = "eating"
                 break
             case AIType.LEARNING:
                 this.maxSpeed = 1
                 this.reactionDelay = 0.5
                 this.alert = 10
+                this.armLength = 30
+                this.maxWalkDistance = 17
+                this.giveUp = new IncRand(0.03, 10, 20)
                 spriteKey = "learning"
                 break
             case AIType.WORKING:
                 this.maxSpeed = 1
                 this.reactionDelay = 1
                 this.alert = 70
+                this.armLength = 30
+                this.maxWalkDistance = 10
+                this.giveUp = new IncRand(0.03, 10, 16)
                 spriteKey = "working"
                 break
             case AIType.SLEEPING:
                 this.maxSpeed = 0.5
                 this.reactionDelay = 2
                 this.alert = 10
+                this.armLength = 25
+                this.maxWalkDistance = 5
+                this.giveUp = new IncRand(0.05, 2, 10)
                 spriteKey = "sleeping"
+                break
+            case AIType.VEHICLE:
+                this.maxSpeed = 2
+                this.reactionDelay = 0
+                this.alert = 0
+                this.armLength = 10
+                this.maxWalkDistance = 0
+                this.giveUp = new IncRand(0, 0, 0)
+                spriteKey = "vehicle"
                 break
             default:
                 throw new Error("Unknown AIType. Fix your shit!")
@@ -130,8 +170,17 @@ export class AI {
         this.pathfinder.setCurrent(this.position)
 
         if (this.state === AIState.CHASING) {
-            if (this.nearTarget()) {
-                this.gameState.clubPlayer()
+            if (this.plannedPoints.length > this.maxWalkDistance) {
+                this.setStroll()
+            }
+
+            if (this.canReach()) {
+                log("CLUB")
+                if (this.type === AIType.VEHICLE) {
+                    this.gameState.clubPlayer(40)
+                } else {
+                    this.gameState.clubPlayer(10)
+                }
                 this.setStroll()
                 return
             }
@@ -161,12 +210,35 @@ export class AI {
                 return
             }
         } else if (this.state === AIState.TALKING) {
+            this.clearTimeout()
             this.speed = 0
+        } else {
+            if (this.sprite.position.x !== this.targetX && this.sprite.position.y !== this.targetY) {
+                this.clearTimeout()
+                if (!nou(this.reservedTile)) {
+                    let newTarget = this.pathfinder.tile2pos(this.reservedTile)
+                    this.speed = this.maxSpeed
+                    this.setTarget(newTarget.x, newTarget.y)
+                } else if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
+                    this.state = AIState.CHASING
+                    this.speed = this.maxSpeed
+                } else {
+                    this.setStroll()
+                }
+            } else {
+                this.speed = 0
+            }
         }
 
         if (this.nearCurrentPoint()) {
             this.currentPoint += 1
+            if (this.currentPoint >= this.plannedPoints.length) {
+                this.plannedPoints = []
+                this.currentPoint = 0
+                this.onPathComplete()
+            }
         }
+
         this.move()
     }
 
@@ -237,31 +309,23 @@ export class AI {
         this.doChase(3)
     }
 
-    setIdle() {
+    setStroll() {
         this.clearTimeout()
         this.state = AIState.IDLE
-        this.speed = 0
-    }
-
-    setStroll() {
-        this.setIdle()
-        this.doStroll(1)
+        if (this.type !== AIType.VEHICLE) {
+            this.doStroll(1)
+        }
     }
 
     setTalking() {
         this.clearTimeout()
         this.state = AIState.TALKING
-        this.speed = 0
     }
 
     setChasing() {
-        this.doChase(this.reactionDelay)
-    }
-
-    setSitting() {
-        this.clearTimeout()
-        this.state = AIState.SITTING
         this.speed = 0
+        this.state = AIState.CHASING
+        this.doChase(this.reactionDelay)
     }
 
     nearTarget(): boolean {
@@ -269,6 +333,13 @@ export class AI {
         const dy = this.position.y - this.targetY
         const dist = Math.sqrt(dx * dx + dy * dy)
         return dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
+    }
+
+    canReach(): boolean {
+        const dx = this.position.x - this.targetX
+        const dy = this.position.y - this.targetY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        return dist < this.armLength
     }
 
     getTileId() {
@@ -283,7 +354,7 @@ export class AI {
         }
         this.position.x = tile.worldX + tile.centerX
         this.position.y = tile.worldY + tile.centerY
-        this.setSitting()
+        this.state = AIState.SITTING
         log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
         this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
     }
@@ -306,7 +377,7 @@ export class AI {
         if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
             return false
         }
-        const tile = this.pathfinder.pos2tile(new Phaser.Point(x,y))
+        const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
         if (this.gameState.hasCollision(tile.x, tile.y)) {
             return false
         }
@@ -328,6 +399,7 @@ export class AI {
 
     onPlayerMove(pos: Phaser.Point) {
         if (this.state === AIState.CHASING) {
+            this.setTarget(pos.x, pos.y)
             this.pathfinder.setTarget(pos)
         }
     }
@@ -339,7 +411,6 @@ export class AI {
 
     private doChase(delay: number) {
         this.async(() => {
-            this.state = AIState.CHASING
             this.speed = this.maxSpeed
             this.giveUp.reset()
             this.speedUp.reset()
@@ -351,10 +422,44 @@ export class AI {
             this.state = AIState.STROLL
             this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
             while (!this.setTarget(
-                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize/2,
-                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize/2)) {
+                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
+                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
                 console.log("Cannot find suitable location for stroll")
             }
         }, delay * 1000)
+    }
+
+    reserveTile() {
+        switch (this.type) {
+            case AIType.LEARNING:
+            case AIType.EATING:
+            case AIType.SLEEPING:
+            case AIType.WORKING:
+
+                break
+            case AIType.VEHICLE:
+                if (this.state === AIState.PARKING) {
+                    this.gameState.getTilesForType(1, "Road")
+                }
+                break
+            default:
+                // No static place
+                break
+        }
+    }
+
+    setTilePosition(tile: Phaser.Point) {
+        this.sprite.position = this.pathfinder.tile2pos(tile)
+    }
+
+    onPathComplete() {
+        log("PATH DONE")
+        if (!nou(this.onPathCompleteHandler)) {
+            this.onPathCompleteHandler()
+        }
+    }
+
+    kill() {
+        this.sprite.kill()
     }
 }
