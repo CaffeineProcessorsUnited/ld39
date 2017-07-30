@@ -6,7 +6,7 @@ import {AStar} from "../classes/astar"
 export class GameState extends State {
 
     _energyReserve: number = 100
-    energyLossPerSecond: number = 0.1
+    energyLossPerSecond: number = 5
 
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
 
@@ -20,6 +20,7 @@ export class GameState extends State {
     layerManager: LayerManager
     ai: AI
     music: Phaser.Sound
+    unlockedLevel: boolean[] = [false, false, false]
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -57,9 +58,12 @@ export class GameState extends State {
         this.ai = new AI(AIType.GUARD, this)
         this.ai.pickPocket()
 
-        setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
+        setTimeout(() => {
+            this.ai.sitDown(125, 125)
+        }, 5000)
 
         window.document.getElementById("led3")!.style.animationDuration = "4s"
+        this.game.forceSingleUpdate = true
     }
 
     _update = () => {
@@ -99,9 +103,8 @@ export class GameState extends State {
         this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
         let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
-        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
-        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
-
+        //this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
+        //this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
 
 
         let batled = window.document.getElementById("led2")!
@@ -128,8 +131,8 @@ export class GameState extends State {
     }
 
     _render = () => {
-        this.game.debug.body(this.ref("player", "player"))
-        this.game.debug.cameraInfo(this.game.camera, 32, 32)
+        //this.game.debug.body(this.ref("player", "player"))
+        //this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
     setupTilemap() {
@@ -216,6 +219,7 @@ export class GameState extends State {
         }
 
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
+            console.log("press")
             if (event.code.toLowerCase() === "space") {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
@@ -267,7 +271,7 @@ export class GameState extends State {
     }
 
     gameOver() {
-        console.log("GAME OVER")
+        //console.log("GAME OVER")
     }
 
     get energyReserve() {
@@ -324,7 +328,13 @@ export class GameState extends State {
         this.map.replace(curTile, tid, x, y, 1, 1, layer)
     }
 
-    openDoor(x: number, y: number, tid: number) {
-        this.replaceTile(x, y, tid, "Doors")
+    openDoor(x: number, y: number, tid: number, level: number) {
+        if (this.unlockedLevel[level]) {
+            this.replaceTile(x, y, tid, "Doors")
+        }
+    }
+
+    unlockLevel(idx: number) {
+        this.unlockedLevel[idx] = true
     }
 }
