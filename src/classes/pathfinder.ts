@@ -1,6 +1,7 @@
 import {AI} from "./ai"
 import {GameState} from "../states/game"
 import {AStar} from "./astar"
+import {nou} from "../sgl/util"
 
 export class Pathfinder {
     private curPos: Phaser.Point
@@ -21,7 +22,7 @@ export class Pathfinder {
     constructor(npc: AI, gs: GameState) {
         this.npc = npc
         this.gs = gs
-        this.interval = setInterval(this.onUpdate.bind(this), 1000)
+        this.interval = setInterval(this.onUpdate.bind(this), 100)
     }
 
     setCurrent(pos: Phaser.Point) {
@@ -36,14 +37,14 @@ export class Pathfinder {
         this.dirty = true
     }
 
-    private tile2pos(tile: Phaser.Point): Phaser.Point {
+    tile2pos(tile: Phaser.Point): Phaser.Point {
         return new Phaser.Point(
             tile.x * this.gs.map.tileWidth + this.gs.map.tileWidth / 2,
             tile.y * this.gs.map.tileHeight + this.gs.map.tileHeight / 2
         )
     }
 
-    private pos2tile(pos: Phaser.Point): Phaser.Point {
+    pos2tile(pos: Phaser.Point): Phaser.Point {
         return new Phaser.Point(
             Math.floor(pos.x / this.gs.map.tileWidth),
             Math.floor(pos.y / this.gs.map.tileHeight)
@@ -61,12 +62,29 @@ export class Pathfinder {
         }
 
         let astar = new AStar(this.gs)
-        this.plannedTile = astar.getPath(this.curTile, this.targetTile)
-        this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
-        this.plannedPos.push(this.targetPos)
 
-        this.npc.newTargets(this.plannedPos)
-        this.dirty = false
+        let plannedTile = astar.getPath(this.curTile, this.targetTile)
+
+        if (nou(this.plannedTile) || !Pathfinder.pathEquals(this.plannedTile, plannedTile)) {
+            this.plannedTile = plannedTile
+            this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
+            this.plannedPos.push(this.targetPos)
+
+            this.npc.newTargets(this.plannedPos)
+            this.dirty = false
+        }
+    }
+
+    private static pathEquals(a: Phaser.Point[], b: Phaser.Point[]): boolean {
+        if (a.length !== b.length) {
+            return false
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (!a[i].equals(b[i])) {
+                return false
+            }
+        }
+        return true
     }
 
 }
