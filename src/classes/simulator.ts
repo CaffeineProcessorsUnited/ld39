@@ -1,20 +1,21 @@
 import {GameState} from "../states/game"
 import {AI, AIState, AIType} from "./ai"
-import {nou} from "../sgl/util"
+import {nou, log} from "../sgl/util"
+import {Pathfinder} from "./pathfinder"
 
 export class Simulator {
     gameState: GameState
     entities: { [index: number]: AI[] } = {}
 
     constructor(gameState: GameState) {
-
+        this.gameState = gameState
     }
 
     spawn(type: AIType, state: AIState) {
         if (nou(this.entities[type.valueOf()])) {
             this.entities[type.valueOf()] = []
         }
-        let i = this.entities[type.valueOf()].push(new AI(type, this.gameState))
+        let i = this.entities[type.valueOf()].push(new AI(type, this.gameState)) - 1
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:
@@ -28,13 +29,20 @@ export class Simulator {
                 break
         }
         let path = this.getPath(type)
+        log(path)
         switch (state) {
             case AIState.DRIVING:
                 this.entities[type.valueOf()][i].setTilePosition(path.spawn)
-                this.entities[type.valueOf()][i].setTarget(path.target)
+                this.entities[type.valueOf()][i].newTargets(path.targets)
+                this.entities[type.valueOf()][i].onPathCompleteHandler = () => {
+                    this.entities[type.valueOf()][i].kill()
+                    this.entities[type.valueOf()].splice(i, 1)
+                    this.spawn(AIType.VEHICLE, AIState.DRIVING)
+                }
                 break
             default:
                 this.entities[type.valueOf()][i].setTilePosition(path.spawn)
+                //this.entities[type.valueOf()][i].goToReservedTile()
                 break
         }
     }
@@ -45,11 +53,11 @@ export class Simulator {
             paths = [
                 {
                     "spawn": new Phaser.Point(0, 0),
-                    "target": new Phaser.Point(8, 8),
-                },
-                {
-                    "spawn": new Phaser.Point(8, 8),
-                    "target": new Phaser.Point(0, 0),
+                    "targets": [
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(0, 4)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 4)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 0)),
+                    ],
                 },
             ]
         } else {
@@ -68,7 +76,7 @@ export class Simulator {
         if (paths.length === 0) {
             throw new Error("No path implemented")
         }
-        return paths[Math.random() * paths.length]
+        return paths[Math.floor(Math.random() * paths.length)]
     }
 
     update() {
