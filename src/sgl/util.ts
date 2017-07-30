@@ -38,6 +38,5 @@ export function range(from: number, to: number): number[] {
 }
 
 export function choose<T>(objs: T[]): T {
-    const idx = Math.floor(objs.length * Math.random())
-    return objs[idx]
+    return objs[Math.floor(objs.length * Math.random())]
 }

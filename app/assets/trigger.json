@@ -151,9 +151,17 @@
       "x":77,
       "y":21,
       "keypress":{
-        "Space":"play:dark_mix"
+        "Space":"play:piano-low"
       },
-      "exit":"stop:dark_mix"
+      "exit":"stop:piano-low"
+    },
+    {
+      "x":78,
+      "y":21,
+      "keypress":{
+        "Space":"play:piano-high"
+      },
+      "exit":"stop:piano-high"
     },
     {
       "x":9,

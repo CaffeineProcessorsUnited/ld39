@@ -5,21 +5,27 @@ export class IncRand {
     start: number
     last: number
     chance: number
+    stopped: boolean
 
-    constructor(incPerSec: number, minDuration: number, maxDuration: number) {
+    constructor(incPerSec: number, minDuration: number, maxDuration: number, stopped: boolean = false) {
         this.incPerSec = incPerSec
         this.minDuration = minDuration
         this.maxDuration = maxDuration
+        this.stopped = stopped
 
         this.reset()
     }
 
-    reset() {
+    reset(stopped: boolean = false) {
         this.start = Date.now()
         this.chance = 0
+        this.stopped = stopped
     }
 
     getRand(): boolean {
+        if (this.stopped) {
+            return false
+        }
         let now = Date.now()
         let delta = (now - this.start) / 1000
         if (this.minDuration > delta) {
