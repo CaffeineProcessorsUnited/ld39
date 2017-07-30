@@ -33,8 +33,9 @@ export class AI {
     state: AIState
     type: AIType
     alert: number
-    reservedTile: Phaser.Point
+    reservedTile?: Phaser.Point
     onPathCompleteHandler: () => void
+    spriteSound: Phaser.Sound
     private gameState: GameState
     private player: any
     private tileSize: number
@@ -147,6 +148,7 @@ export class AI {
                 this.armLength = 10
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0)
+                this.spriteSound = this.gameState.game.sound.add("vehicle")
                 spriteKey = "vehicle"
                 break
             default:
@@ -216,7 +218,7 @@ export class AI {
             if (this.sprite.position.x !== this.targetX && this.sprite.position.y !== this.targetY) {
                 this.clearTimeout()
                 if (!nou(this.reservedTile)) {
-                    let newTarget = this.pathfinder.tile2pos(this.reservedTile)
+                    let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
                     this.speed = this.maxSpeed
                     this.setTarget(newTarget.x, newTarget.y)
                 } else if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
@@ -238,6 +240,8 @@ export class AI {
                 this.onPathComplete()
             }
         }
+
+        this.sound()
 
         this.move()
     }
@@ -295,6 +299,20 @@ export class AI {
             }
         }
 
+    }
+
+    sound() {
+        if (!nou(this.spriteSound)) {
+            if (this.type === AIType.VEHICLE) {
+                if (this.state === AIState.DRIVING) {
+                    if (!this.spriteSound.isPlaying) {
+                        this.spriteSound.play()
+                    }
+                } else {
+                    this.spriteSound.stop()
+                }
+            }
+        }
     }
 
     pickPocket() {
@@ -409,26 +427,6 @@ export class AI {
         this.currentPoint = 0
     }
 
-    private doChase(delay: number) {
-        this.async(() => {
-            this.speed = this.maxSpeed
-            this.giveUp.reset()
-            this.speedUp.reset()
-        }, delay * 1000)
-    }
-
-    private doStroll(delay: number) {
-        this.async(() => {
-            this.state = AIState.STROLL
-            this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
-            while (!this.setTarget(
-                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
-                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
-                console.log("Cannot find suitable location for stroll")
-            }
-        }, delay * 1000)
-    }
-
     reserveTile() {
         switch (this.type) {
             case AIType.LEARNING:
@@ -439,7 +437,9 @@ export class AI {
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
-                    this.gameState.getTilesForType(1, "Road")
+                    //this.gameState.getTilesForType(1, "Road")
+                    this.reservedTile = new Phaser.Point(6, 6)
+                    log(this.reservedTile)
                 }
                 break
             default:
@@ -461,5 +461,25 @@ export class AI {
 
     kill() {
         this.sprite.kill()
+    }
+
+    private doChase(delay: number) {
+        this.async(() => {
+            this.speed = this.maxSpeed
+            this.giveUp.reset()
+            this.speedUp.reset()
+        }, delay * 1000)
+    }
+
+    private doStroll(delay: number) {
+        this.async(() => {
+            this.state = AIState.STROLL
+            this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
+            while (!this.setTarget(
+                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
+                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
+                console.log("Cannot find suitable location for stroll")
+            }
+        }, delay * 1000)
     }
 }

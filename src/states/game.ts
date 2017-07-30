@@ -43,6 +43,7 @@ export class GameState extends State {
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
         this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
+        this.game.load.audio("vehicle", "assets/audio/vehicle.ogg")
     }
     _create = () => {
 

@@ -16,6 +16,7 @@ export class Simulator {
             this.entities[type.valueOf()] = []
         }
         let i = this.entities[type.valueOf()].push(new AI(type, this.gameState)) - 1
+        this.entities[type.valueOf()][i].state = state
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:
@@ -32,12 +33,13 @@ export class Simulator {
         log(path)
         switch (state) {
             case AIState.DRIVING:
+                this.entities[type.valueOf()][i].reservedTile = undefined
                 this.entities[type.valueOf()][i].setTilePosition(path.spawn)
                 this.entities[type.valueOf()][i].newTargets(path.targets)
                 this.entities[type.valueOf()][i].onPathCompleteHandler = () => {
                     this.entities[type.valueOf()][i].kill()
                     this.entities[type.valueOf()].splice(i, 1)
-                    this.spawn(AIType.VEHICLE, AIState.DRIVING)
+                    this.spawn(AIType.VEHICLE, AIState.PARKING)
                 }
                 break
             default:
