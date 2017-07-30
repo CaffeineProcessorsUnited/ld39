@@ -449,7 +449,7 @@ export class GameState extends State {
         this.ref("dialog", name).setVisible(false)
     }
 
-    story(key: string) {
+    story(t: Trigger, key: string) {
         switch (key) {
             case "tutorial0-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Welcome to the game!")
