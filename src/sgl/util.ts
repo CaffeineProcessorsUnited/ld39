@@ -28,3 +28,11 @@ export function minmax(val: number, low: number, high: number) {
 export function nou(o: any) {
     return o === null || o === undefined
 }
+
+export function range(from: number, to: number): number[] {
+    let r = []
+    while (from < to) {
+        r.push(from++)
+    }
+    return r
+}

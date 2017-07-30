@@ -36,7 +36,7 @@ export class GameState extends State {
         this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
-        this.game.load.audio("dark_mix", "assets/dark_mix.ogg")
+        this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
     }
 
     _create = () => {
@@ -102,6 +102,7 @@ export class GameState extends State {
         this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
         this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
     }
+
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))
         this.game.debug.cameraInfo(this.game.camera, 32, 32)
