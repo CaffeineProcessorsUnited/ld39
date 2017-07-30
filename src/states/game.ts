@@ -1,17 +1,12 @@
-import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl"
+import {Dialog, error, Layer, LayerManager, log, State} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
-import {AStar} from "../classes/astar"
 
 export class GameState extends State {
 
-    _energyReserve: number = 100
     energyLossPerSecond: number = 5
-
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
-
     zoom: number = 1
-
     map: Phaser.Tilemap
     cursors: Phaser.CursorKeys
     triggers: Array<Trigger> = []
@@ -21,13 +16,10 @@ export class GameState extends State {
     ai: AI
     music: Phaser.Sound
     unlockedLevel: boolean[] = [false, false, false]
-
     currentTrigger: Trigger
-
     _init = (map: string) => {
         // TODO: Select map to load
     }
-
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
         this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
@@ -41,7 +33,6 @@ export class GameState extends State {
         this.game.load.json("trigger", "assets/trigger.json")
         this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
     }
-
     _create = () => {
 
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
@@ -67,7 +58,6 @@ export class GameState extends State {
         window.document.getElementById("led3")!.style.animationDuration = "4s"
         this.game.forceSingleUpdate = true
     }
-
     _update = () => {
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
@@ -81,40 +71,52 @@ export class GameState extends State {
         let max = 200
         let rate = 80
 
-        if (this.ref("player", "player").body.velocity.x >= max) {this.ref("player", "player").body.velocity.x = max}
-        if (this.ref("player", "player").body.velocity.y >= max) {this.ref("player", "player").body.velocity.y = max}
-        if (this.ref("player", "player").body.velocity.x <= max * -1) {this.ref("player", "player").body.velocity.x = max * -1}
-        if (this.ref("player", "player").body.velocity.y <= max * -1) {this.ref("player", "player").body.velocity.y = max * -1}
+        if (this.ref("player", "player").body.velocity.x >= max) {
+            this.ref("player", "player").body.velocity.x = max
+        }
+        if (this.ref("player", "player").body.velocity.y >= max) {
+            this.ref("player", "player").body.velocity.y = max
+        }
+        if (this.ref("player", "player").body.velocity.x <= max * -1) {
+            this.ref("player", "player").body.velocity.x = max * -1
+        }
+        if (this.ref("player", "player").body.velocity.y <= max * -1) {
+            this.ref("player", "player").body.velocity.y = max * -1
+        }
 
 
-            if (this.cursors.left.isDown) {
-                this.ref("player", "player").body.velocity.x -= rate
-                // this.ref("player", "player").animations.play("left")
-            } else if (this.cursors.right.isDown) {
-                this.ref("player", "player").body.velocity.x += rate
-                // this.ref("player", "player").animations.play("right")
+        if (this.cursors.left.isDown) {
+            this.ref("player", "player").body.velocity.x -= rate
+            // this.ref("player", "player").animations.play("left")
+        } else if (this.cursors.right.isDown) {
+            this.ref("player", "player").body.velocity.x += rate
+            // this.ref("player", "player").animations.play("right")
+        } else {
+            if (this.ref("player", "player").body.velocity.x >= damping) {
+                this.ref("player", "player").body.velocity.x -= damping
+            } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
+                this.ref("player", "player").body.velocity.x += damping
             } else {
-                if (this.ref("player", "player").body.velocity.x >= damping){
-                    this.ref("player", "player").body.velocity.x -= damping
-                } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
-                    this.ref("player", "player").body.velocity.x += damping
-                } else {this.ref("player", "player").body.velocity.x = 0}
+                this.ref("player", "player").body.velocity.x = 0
             }
+        }
 
-            if (this.cursors.up.isDown) {
-                this.ref("player", "player").body.velocity.y -= rate
-                // this.ref("player", "player").animations.play("up")
-            } else if (this.cursors.down.isDown) {
-                this.ref("player", "player").body.velocity.y += rate
-                // this.ref("player", "player").animations.play("down")
-            } else {
+        if (this.cursors.up.isDown) {
+            this.ref("player", "player").body.velocity.y -= rate
+            // this.ref("player", "player").animations.play("up")
+        } else if (this.cursors.down.isDown) {
+            this.ref("player", "player").body.velocity.y += rate
+            // this.ref("player", "player").animations.play("down")
+        } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
-                if (this.ref("player", "player").body.velocity.y >= damping){
-                    this.ref("player", "player").body.velocity.y -= damping
-                } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
-                    this.ref("player", "player").body.velocity.y += damping
-                } else {this.ref("player", "player").body.velocity.y = 0}
+            if (this.ref("player", "player").body.velocity.y >= damping) {
+                this.ref("player", "player").body.velocity.y -= damping
+            } else if (this.ref("player", "player").body.velocity.y <= damping * -1) {
+                this.ref("player", "player").body.velocity.y += damping
+            } else {
+                this.ref("player", "player").body.velocity.y = 0
+            }
         }
 
         this.trigger()
@@ -148,10 +150,20 @@ export class GameState extends State {
             batled.style.animationDuration = "0s"
         }
     }
-
     _render = () => {
         //this.game.debug.body(this.ref("player", "player"))
         //this.game.debug.cameraInfo(this.game.camera, 32, 32)
+    }
+
+    _energyReserve: number = 100
+
+    get energyReserve() {
+        return this._energyReserve
+    }
+
+    set energyReserve(energyReserve: number) {
+        this._energyReserve = energyReserve
+        this.updateBatteryIcon()
     }
 
     setupTilemap() {
@@ -163,25 +175,51 @@ export class GameState extends State {
         this.map.addTilesetImage("Custom", "tilesheet_custom")
 
         const _layers = [
-            "Collision",
-            "Ground",
-            "Glass",
-            "Roadmarker",
-            "Roadmarker2",
-            "Environment",
-            "Carpet",
-            "Doors",
-            "Tables",
-            "Shelves",
-            "Ontop",
+            {
+                "name": "Collision",
+                "renderable": false,
+            },
+            {
+                "name": "Ground",
+            },
+            {
+                "name": "Glass",
+            },
+            {
+                "name": "Roadmarker",
+                "renderable": false,
+            },
+            {
+                "name": "Roadmarker2",
+            },
+            {
+                "name": "Environment",
+                "renderable": false,
+            },
+            {
+                "name": "Carpet",
+            },
+            {
+                "name": "Doors",
+            },
+            {
+                "name": "Tables",
+            },
+            {
+                "name": "Shelves",
+            },
+            {
+                "name": "Ontop",
+            },
         ]
-        _layers.forEach((layer: string) => {
-            const idx = layer.toLowerCase()
-            const _layer = this.map.createLayer(layer)
+        _layers.forEach((layer: any) => {
+            const idx = layer.name.toLowerCase()
+            const _layer = this.map.createLayer(layer.name)
             if (_layer !== undefined) {
                 this.layers[idx] = _layer
                 this.layers[idx].resizeWorld()
-                this.layers[idx].autoCull = false
+                this.layers[idx].renderable = layer.renderable || true
+                this.layers[idx].autoCull = true
             }
         })
 
@@ -243,9 +281,9 @@ export class GameState extends State {
             if (event.code.toLowerCase() === "space") {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
-                //if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
-                this.ai.pickPocket()
-                //}
+                if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                    this.ai.pickPocket()
+                }
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
@@ -300,15 +338,6 @@ export class GameState extends State {
 
     gameOver() {
         //console.log("GAME OVER")
-    }
-
-    get energyReserve() {
-        return this._energyReserve
-    }
-
-    set energyReserve(energyReserve: number) {
-        this._energyReserve = energyReserve
-        this.updateBatteryIcon()
     }
 
     clubPlayer() {

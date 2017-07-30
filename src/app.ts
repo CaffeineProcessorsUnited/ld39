@@ -7,6 +7,7 @@ ready(() => {
     (<any>window).loader = new Loader()
     let loader = (<any>window).loader
     loader.parent = "game"
+    loader.renderer = Phaser.WEBGL
     loader.scaling = Phaser.ScaleManager.EXACT_FIT
     // Initialize game
     // game = loader.game
