@@ -148,12 +148,12 @@ export class AI {
                 this.armLength = 10
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0)
-                this.spriteSound = this.gameState.game.sound.add("vehicle")
                 spriteKey = "vehicle"
                 break
             default:
                 throw new Error("Unknown AIType. Fix your shit!")
         }
+        this.newSound()
         this.maxSpeed *= this.tileSize
         this.sprite = this.gameState.game.add.sprite(200, 200, spriteKey)
         this.sprite.anchor.set(0.5)
@@ -222,7 +222,6 @@ export class AI {
                     this.speed = this.maxSpeed
                     this.setTarget(newTarget.x, newTarget.y)
                 } else if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
-                    this.state = AIState.CHASING
                     this.speed = this.maxSpeed
                 } else {
                     this.setStroll()
@@ -255,6 +254,12 @@ export class AI {
         const dy = this.plannedPoints[this.currentPoint].y - this.position.y
         const dist = Math.sqrt(dx * dx + dy * dy)
         return dist < this.speed * this.gameState.game.time.elapsedMS / 1000.
+    }
+
+    distanceToPlayer(): number {
+        const dx = this.player.x - this.position.x
+        const dy = this.player.y - this.position.y
+        return Math.sqrt(dx * dx + dy * dy)
     }
 
     move() {
@@ -304,14 +309,32 @@ export class AI {
     sound() {
         if (!nou(this.spriteSound)) {
             if (this.type === AIType.VEHICLE) {
-                if (this.state === AIState.DRIVING) {
+                if (this.speed > 0) {
                     if (!this.spriteSound.isPlaying) {
+                        this.spriteSound.loop = true
                         this.spriteSound.play()
                     }
                 } else {
-                    this.spriteSound.stop()
+                    this.spriteSound.fadeOut(1000)
                 }
             }
+            this.spriteSound.volume = Phaser.Math.clamp(1 - (this.distanceToPlayer() / (8 * this.tileSize)), 0, 1)
+        }
+    }
+
+    newSound() {
+        log("new sound")
+        if (!nou(this.spriteSound)) {
+            this.spriteSound.stop()
+            this.spriteSound.destroy()
+        }
+        switch (this.type) {
+            case AIType.VEHICLE:
+                this.spriteSound = this.gameState.game.sound.add(`car${Math.floor(Math.random() * 4)}`)
+                break
+            default:
+                log("This type has no sound!")
+                break
         }
     }
 
@@ -357,6 +380,8 @@ export class AI {
         const dx = this.position.x - this.targetX
         const dy = this.position.y - this.targetY
         const dist = Math.sqrt(dx * dx + dy * dy)
+
+        log(this.position, this.targetX, this.targetY, dx, dy, dist, this.armLength)
         return dist < this.armLength
     }
 
@@ -457,10 +482,6 @@ export class AI {
         if (!nou(this.onPathCompleteHandler)) {
             this.onPathCompleteHandler()
         }
-    }
-
-    kill() {
-        this.sprite.kill()
     }
 
     private doChase(delay: number) {

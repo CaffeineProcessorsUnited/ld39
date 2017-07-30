@@ -17,13 +17,20 @@ export class Simulator {
         }
         let i = this.entities[type.valueOf()].push(new AI(type, this.gameState)) - 1
         this.entities[type.valueOf()][i].state = state
+        this.respawn(this.entities[type.valueOf()][i])
+
+    }
+
+    respawn(object: AI) {
+        let type = object.type
+        let state = object.state
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:
             case AIType.SLEEPING:
             case AIType.WORKING:
             case AIType.VEHICLE:
-                this.entities[type.valueOf()][i].reserveTile()
+                object.reserveTile()
                 break
             default:
                 // No static place
@@ -33,20 +40,18 @@ export class Simulator {
         log(path)
         switch (state) {
             case AIState.DRIVING:
-                this.entities[type.valueOf()][i].reservedTile = undefined
-                this.entities[type.valueOf()][i].setTilePosition(path.spawn)
-                this.entities[type.valueOf()][i].newTargets(path.targets)
-                this.entities[type.valueOf()][i].onPathCompleteHandler = () => {
-                    this.entities[type.valueOf()][i].kill()
-                    this.entities[type.valueOf()].splice(i, 1)
-                    this.spawn(AIType.VEHICLE, AIState.PARKING)
+                object.reservedTile = undefined
+                object.setTilePosition(path.spawn)
+                object.newTargets(path.targets)
+                object.onPathCompleteHandler = () => {
+                    this.respawn(object)
                 }
                 break
             default:
-                this.entities[type.valueOf()][i].setTilePosition(path.spawn)
-                //this.entities[type.valueOf()][i].goToReservedTile()
+                object.setTilePosition(path.spawn)
                 break
         }
+        object.newSound()
     }
 
     getPath(type: AIType) {
@@ -56,9 +61,11 @@ export class Simulator {
                 {
                     "spawn": new Phaser.Point(0, 0),
                     "targets": [
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(0, 4)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 4)),
-                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 0)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(0, 1)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 1)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(4, 3)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(5, 3)),
+                        Pathfinder.tile2pos(this.gameState, new Phaser.Point(5, 0)),
                     ],
                 },
             ]
@@ -84,7 +91,20 @@ export class Simulator {
     update() {
         Object.getOwnPropertyNames(this.entities).forEach((type: number) => {
             this.entities[type].forEach((entity: AI) => {
+                entity.onPlayerMove(this.gameState.ref("player", "player").position)
                 entity.update()
+            })
+        })
+    }
+
+    pickPocket() {
+        Object.getOwnPropertyNames(this.entities).forEach((type: number) => {
+            this.entities[type].forEach((entity: AI) => {
+                let dx = entity.position.x - this.gameState.currentTile.worldX
+                let dy = entity.position.y - this.gameState.currentTile.worldY
+                if (dx * dx + dy * dy < 4 * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
+                    entity.pickPocket()
+                }
             })
         })
     }

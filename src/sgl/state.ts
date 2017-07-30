@@ -128,6 +128,7 @@ export abstract class State extends Phaser.State implements IState {
             }, this)
             this.loader.game.camera.fade(0x000000, this.fadeDuration.out)
         } else {
+            log("fadeOut")
             callback()
         }
     }

@@ -1,7 +1,6 @@
 import {Dialog, error, Layer, LayerManager, log, State} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
-import {AI, AIType, AIState} from "../classes/ai"
-import {AStar} from "../classes/astar"
+import {AI, AIState, AIType} from "../classes/ai"
 import {choose, nou, range} from "../sgl/util"
 import {Simulator} from "../classes/simulator"
 
@@ -23,7 +22,6 @@ export class GameState extends State {
     lastTile: Phaser.Tile
     currentTile: Phaser.Tile
     layerManager: LayerManager
-    npc: AI[] = []
     music: Phaser.Sound
     unlockedLevel: boolean[] = [false, false, false]
     currentTrigger: Trigger
@@ -43,7 +41,15 @@ export class GameState extends State {
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
         this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
-        this.game.load.audio("vehicle", "assets/audio/vehicle.ogg")
+        this.game.load.audio("car0", "assets/audio/car0.ogg")
+        this.game.load.audio("car1", "assets/audio/car1.ogg")
+        this.game.load.audio("car2", "assets/audio/car2.ogg")
+        this.game.load.audio("car3", "assets/audio/car3.ogg")
+        this.game.load.audio("walk0", "assets/audio/walk0.ogg")
+        this.game.load.audio("walk1", "assets/audio/walk1.ogg")
+        this.game.load.audio("walk2", "assets/audio/walk2.ogg")
+        this.game.load.audio("walk3", "assets/audio/walk3.ogg")
+        this.game.load.audio("walk4", "assets/audio/walk4.ogg")
     }
     _create = () => {
 
@@ -61,13 +67,11 @@ export class GameState extends State {
         this.lastTile = this.currentTile
 
         this.simulator = new Simulator(this)
-        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
-
-        this.npc.push(new AI(AIType.GUARD, this))
-        this.npc[0].pickPocket()
+        // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        this.simulator.spawn(AIType.GUARD, AIState.IDLE)
 
         setTimeout(() => {
-            this.npc[0].sitDown(125, 125)
+            //this.npc[0].sitDown(125, 125)
         }, 5000)
 
         window.document.getElementById("led3")!.style.animationDuration = "4s"
@@ -138,10 +142,6 @@ export class GameState extends State {
         this.lastTile = this.currentTile
 
         this.simulator.update()
-        this.npc.forEach(npc => {
-            npc.onPlayerMove(this.ref("player", "player").position)
-            npc.update()
-        })
 
         this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 115)
 
@@ -180,8 +180,7 @@ export class GameState extends State {
         }
 
         if (this.energyReserve <= 0) {
-            log("game över")
-            this.changeState("menu")
+            this.gameOver()
         }
     }
     _render = () => {
@@ -313,13 +312,7 @@ export class GameState extends State {
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
             console.log("press")
             if (event.code.toLowerCase() === "space") {
-                this.npc.forEach(npc => {
-                    let dx = npc.position.x - this.currentTile.worldX
-                    let dy = npc.position.y - this.currentTile.worldY
-                    if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
-                        npc.pickPocket()
-                    }
-                })
+                this.simulator.pickPocket()
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
@@ -374,7 +367,7 @@ export class GameState extends State {
 
     gameOver() {
         //console.log("GAME OVER")
-        this.changeState("menu")
+        //this.changeState("menu")
     }
 
     clubPlayer(amount: number) {
@@ -515,7 +508,7 @@ export class GameState extends State {
         let type = choose(types)
         let ai = new AI(type, this)
         ai.setTilePosition(tile)
-        this.npc.push(ai)
+        throw new Error("USE THE SIMULATOR")
     }
 
     spreadPlayers(level: number) {
