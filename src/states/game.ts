@@ -314,7 +314,15 @@ export class GameState extends State {
         if (x < 0 || y < 0 || x > this.map.width || y > this.map.height) {
             return true
         }
-        return this.map.getTile(x, y, "Collision") !== null
+        const coll = this.map.getTile(x, y, "Collision") !== null
+        // this.game.debug.rectangle(
+        //     new Phaser.Rectangle(
+        //         x*this.map.tileWidth,
+        //         y*this.map.tileHeight,
+        //         20,
+        //         20),
+        //     coll ? "#ff0000" : "#00ff00")
+        return coll
     }
 
     playSound(key: string, loop: boolean = false) {

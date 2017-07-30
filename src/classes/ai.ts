@@ -203,8 +203,16 @@ export class AI {
                 //             value.y,
                 //             20,
                 //             20),
-                //         "#ff0000")
+                //         "#0000ff")
                 // })
+                //
+                // this.gameState.game.debug.rectangle(
+                //     new Phaser.Rectangle(
+                //         this.plannedPoints[this.currentPoint].x,
+                //         this.plannedPoints[this.currentPoint].y,
+                //         20,
+                //         20),
+                //     "#ff00ff")
             } else {
                 const dx = this.targetX - this.position.x
                 const dy = this.targetY - this.position.y
@@ -294,7 +302,14 @@ export class AI {
         }, delta)
     }
 
-    setTarget(x: number, y: number) {
+    setTarget(x: number, y: number): boolean {
+        if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
+            return false
+        }
+        const tile = this.pathfinder.pos2tile(new Phaser.Point(x,y))
+        if (this.gameState.hasCollision(tile.x, tile.y)) {
+            return false
+        }
         const dx = this.position.x - x
         const dy = this.position.y - y
         const dist = Math.sqrt(dx * dx + dy * dy)
@@ -308,6 +323,7 @@ export class AI {
         } else {
             this.pathfinder.setTarget(new Phaser.Point(x, y))
         }
+        return true
     }
 
     onPlayerMove(pos: Phaser.Point) {
@@ -334,9 +350,11 @@ export class AI {
         this.async(() => {
             this.state = AIState.STROLL
             this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
-            this.setTarget(
-                this.targetX + Math.round(Math.random() * 4 - 2) * this.tileSize,
-                this.targetY + Math.round(Math.random() * 4 - 2) * this.tileSize)
+            while (!this.setTarget(
+                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize/2,
+                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize/2)) {
+                console.log("Cannot find suitable location for stroll")
+            }
         }, delay * 1000)
     }
 }
