@@ -2,6 +2,14 @@ import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
 import {AStar} from "../classes/astar"
+import {choose, nou, range} from "../sgl/util"
+
+enum LEVEL {
+    PARKINGLOT,
+    MENSA,
+    LIBRARY,
+    PCPOOL
+}
 
 export class GameState extends State {
 
@@ -18,7 +26,7 @@ export class GameState extends State {
     lastTile: Phaser.Tile
     currentTile: Phaser.Tile
     layerManager: LayerManager
-    ai: AI
+    npc: AI[] = []
     music: Phaser.Sound
     unlockedLevel: boolean[] = [false, false, false]
 
@@ -57,11 +65,11 @@ export class GameState extends State {
         this.currentTile = this.map.getTileWorldXY(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.lastTile = this.currentTile
 
-        this.ai = new AI(AIType.GUARD, this)
-        this.ai.pickPocket()
+        this.npc.push(new AI(AIType.GUARD, this))
+        this.npc[0].pickPocket()
 
         setTimeout(() => {
-            this.ai.sitDown(125, 125)
+            this.npc[0].sitDown(125, 125)
         }, 5000)
 
         window.document.getElementById("led3")!.style.animationDuration = "4s"
@@ -81,49 +89,73 @@ export class GameState extends State {
         let max = 200
         let rate = 80
 
-        if (this.ref("player", "player").body.velocity.x >= max) {this.ref("player", "player").body.velocity.x = max}
-        if (this.ref("player", "player").body.velocity.y >= max) {this.ref("player", "player").body.velocity.y = max}
-        if (this.ref("player", "player").body.velocity.x <= max * -1) {this.ref("player", "player").body.velocity.x = max * -1}
-        if (this.ref("player", "player").body.velocity.y <= max * -1) {this.ref("player", "player").body.velocity.y = max * -1}
+        if (this.ref("player", "player").body.velocity.x >= max) {
+            this.ref("player", "player").body.velocity.x = max
+        }
+        if (this.ref("player", "player").body.velocity.y >= max) {
+            this.ref("player", "player").body.velocity.y = max
+        }
+        if (this.ref("player", "player").body.velocity.x <= max * -1) {
+            this.ref("player", "player").body.velocity.x = max * -1
+        }
+        if (this.ref("player", "player").body.velocity.y <= max * -1) {
+            this.ref("player", "player").body.velocity.y = max * -1
+        }
 
 
-            if (this.cursors.left.isDown) {
-                this.ref("player", "player").body.velocity.x -= rate
-                // this.ref("player", "player").animations.play("left")
-            } else if (this.cursors.right.isDown) {
-                this.ref("player", "player").body.velocity.x += rate
-                // this.ref("player", "player").animations.play("right")
+        if (this.cursors.left.isDown) {
+            this.ref("player", "player").body.velocity.x -= rate
+            // this.ref("player", "player").animations.play("left")
+        } else if (this.cursors.right.isDown) {
+            this.ref("player", "player").body.velocity.x += rate
+            // this.ref("player", "player").animations.play("right")
+        } else {
+            if (this.ref("player", "player").body.velocity.x >= damping) {
+                this.ref("player", "player").body.velocity.x -= damping
+            } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
+                this.ref("player", "player").body.velocity.x += damping
             } else {
-                if (this.ref("player", "player").body.velocity.x >= damping){
-                    this.ref("player", "player").body.velocity.x -= damping
-                } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
-                    this.ref("player", "player").body.velocity.x += damping
-                } else {this.ref("player", "player").body.velocity.x = 0}
+                this.ref("player", "player").body.velocity.x = 0
             }
+        }
 
-            if (this.cursors.up.isDown) {
-                this.ref("player", "player").body.velocity.y -= rate
-                // this.ref("player", "player").animations.play("up")
-            } else if (this.cursors.down.isDown) {
-                this.ref("player", "player").body.velocity.y += rate
-                // this.ref("player", "player").animations.play("down")
-            } else {
+        if (this.cursors.up.isDown) {
+            this.ref("player", "player").body.velocity.y -= rate
+            // this.ref("player", "player").animations.play("up")
+        } else if (this.cursors.down.isDown) {
+            this.ref("player", "player").body.velocity.y += rate
+            // this.ref("player", "player").animations.play("down")
+        } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
-                if (this.ref("player", "player").body.velocity.y >= damping){
-                    this.ref("player", "player").body.velocity.y -= damping
-                } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
-                    this.ref("player", "player").body.velocity.y += damping
-                } else {this.ref("player", "player").body.velocity.y = 0}
+            if (this.ref("player", "player").body.velocity.y >= damping) {
+                this.ref("player", "player").body.velocity.y -= damping
+            } else if (this.ref("player", "player").body.velocity.y <= damping * -1) {
+                this.ref("player", "player").body.velocity.y += damping
+            } else {
+                this.ref("player", "player").body.velocity.y = 0
+            }
         }
 
         this.trigger()
         this.lastTile = this.currentTile
-        this.ai.onPlayerMove(this.ref("player", "player").position)
-        this.ai.update()
-        let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
-        //this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
-        //this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
+        this.npc.forEach(npc => {
+            npc.onPlayerMove(this.ref("player", "player").position)
+            npc.update()
+        })
+
+        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 115)
+
+
+        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", layers:", 30, 135)
+        let line = 155
+        this.map.layers.forEach((_, lid) => {
+            let tile = this.map.getTile(this.lastTile.x, this.lastTile.y, lid)
+            if (tile != null) {
+                this.game.debug.text("    id: " + tile.index + ", layer: " + tile.layer.name, 30, line)
+                line += 20
+            }
+        })
 
 
         let batled = window.document.getElementById("led2")!
@@ -155,8 +187,8 @@ export class GameState extends State {
     }
 
     _render = () => {
-        //this.game.debug.body(this.ref("player", "player"))
-        //this.game.debug.cameraInfo(this.game.camera, 32, 32)
+        // this.game.debug.body(this.ref("player", "player"))
+        // this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
     setupTilemap() {
@@ -246,11 +278,13 @@ export class GameState extends State {
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
             console.log("press")
             if (event.code.toLowerCase() === "space") {
-                let dx = this.ai.sprite.position.x - this.currentTile.worldX
-                let dy = this.ai.sprite.position.y - this.currentTile.worldY
-                //if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
-                this.ai.pickPocket()
-                //}
+                this.npc.forEach(npc => {
+                    let dx = npc.position.x - this.currentTile.worldX
+                    let dy = npc.position.y - this.currentTile.worldY
+                    if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                        npc.pickPocket()
+                    }
+                })
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
@@ -406,7 +440,79 @@ export class GameState extends State {
                 this.hideDialog("dialog")
                 break
             default:
-                error(`Unhandled story action ${key} at ${trigger.x}, ${trigger.y}`)
+                error(`Unhandled story action ${key} at ${this.currentTrigger.x}, ${this.currentTrigger.y}`)
         }
+    }
+
+    getTilesForType(id: number, layer?: string): Phaser.Point[] {
+        return this.map.tiles
+            .filter((tile: Phaser.Tile) => {
+                return tile.index === id && nou(layer) ? true : tile.layer.name === layer
+            })
+            .map((tile: Phaser.Tile) => new Phaser.Point(tile.x, tile.y))
+    }
+
+    getChairTiles(tiles: Phaser.Point[]): Phaser.Point[] {
+        return tiles.filter((pos: Phaser.Point) => {
+            let tile = this.map.getTile(pos.x, pos.y, "Tables")
+            if (tile == null) {
+                return false
+            }
+            // TODO: Set correct ID
+            switch (tile.index) {
+                case 9999:
+                    return true
+                default:
+                    return false
+            }
+        })
+    }
+
+    getTilesForLevel(level: LEVEL): Phaser.Point[] {
+        // TODO: Set correct ID
+        switch (level) {
+            case LEVEL.PARKINGLOT:
+                return this.getTilesForType(9996)
+            case LEVEL.MENSA:
+                return this.getTilesForType(9997)
+            case LEVEL.LIBRARY:
+                return this.getTilesForType(9998)
+            case LEVEL.PCPOOL:
+                return this.getTilesForType(9999)
+            default:
+                return []
+        }
+    }
+
+    spawnPlayer(tiles: Phaser.Point[], types: AIType[]) {
+        let tile = choose(tiles)
+        let type = choose(types)
+        let ai = new AI(type, this)
+        ai.setTilePosition(tile)
+        this.npc.push(ai)
+    }
+
+    spreadPlayers(level: number) {
+        let points = this.getTilesForLevel(level)
+        const type = [
+            AIType.STANDING,
+            AIType.GUARD,
+            AIType.WORKING,
+            AIType.PROF,
+        ]
+
+        // Spawn generic people
+        range(0, 10).forEach(() => this.spawnPlayer(points, type))
+
+
+        if (level === LEVEL.PARKINGLOT) {
+
+        } else if (level === LEVEL.MENSA ||
+            level === LEVEL.LIBRARY ||
+            level === LEVEL.PCPOOL) {
+            let chairs = this.getChairTiles(points)
+            range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING]))
+        }
+
     }
 }
