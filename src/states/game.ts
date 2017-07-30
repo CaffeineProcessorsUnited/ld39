@@ -75,27 +75,49 @@ export class GameState extends State {
         if (this.energyReserve < 0) {
             this.gameOver()
         }
+        let damping = 100
+        let max = 200
+        let rate = 80
+
+        if (this.ref("player", "player").body.velocity.x >= max) {this.ref("player", "player").body.velocity.x = max}
+        if (this.ref("player", "player").body.velocity.y >= max) {this.ref("player", "player").body.velocity.y = max}
+        if (this.ref("player", "player").body.velocity.x <= max * -1) {this.ref("player", "player").body.velocity.x = max * -1}
+        if (this.ref("player", "player").body.velocity.y <= max * -1) {this.ref("player", "player").body.velocity.y = max * -1}
 
 
-        this.ref("player", "player").body.velocity.x = 0
-        this.ref("player", "player").body.velocity.y = 0
+        if (this.cursors.left.isDown || this.cursors.right.isDown || this.cursors.up.isDown || this.cursors.down.isDown) {
+            if (this.cursors.left.isDown) {
+                this.ref("player", "player").body.velocity.x -= rate
+                // this.ref("player", "player").animations.play("left")
+            } else if (this.cursors.right.isDown) {
+                this.ref("player", "player").body.velocity.x += rate
+                // this.ref("player", "player").animations.play("right")
+            }
 
-        if (this.cursors.left.isDown) {
-            this.ref("player", "player").body.velocity.x = -200
-            // this.ref("player", "player").animations.play("left")
-        } else if (this.cursors.right.isDown) {
-            this.ref("player", "player").body.velocity.x = 200
-            // this.ref("player", "player").animations.play("right")
-        }
-        if (this.cursors.up.isDown) {
-            this.ref("player", "player").body.velocity.y = -200
-            // this.ref("player", "player").animations.play("up")
-        } else if (this.cursors.down.isDown) {
-            this.ref("player", "player").body.velocity.y = 200
-            // this.ref("player", "player").animations.play("down")
+            if (this.cursors.up.isDown) {
+                this.ref("player", "player").body.velocity.y -= rate
+                // this.ref("player", "player").animations.play("up")
+            } else if (this.cursors.down.isDown) {
+                this.ref("player", "player").body.velocity.y += rate
+                // this.ref("player", "player").animations.play("down")
+            }
         } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
+
+            if (this.ref("player", "player").body.velocity.x >= damping){
+                this.ref("player", "player").body.velocity.x -= damping
+            } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
+                this.ref("player", "player").body.velocity.x += damping
+            }
+            else {this.ref("player", "player").body.velocity.x = 0}
+
+            if (this.ref("player", "player").body.velocity.y >= damping){
+                this.ref("player", "player").body.velocity.y -= damping
+            } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
+                this.ref("player", "player").body.velocity.y += damping
+            }
+            else {this.ref("player", "player").body.velocity.y = 0}
         }
 
         this.trigger()
