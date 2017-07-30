@@ -418,6 +418,12 @@ export class GameState extends State {
         this.music.play()
     }
 
+    stopSound(key: string, loop: boolean = false) {
+        if (this.music !== undefined) {
+            this.music.fadeOut(1)
+        }
+    }
+
     replaceTile(x: number, y: number, tid: number, layer?: string) {
         const curTile = this.map.getTile(x, y, layer).index
         this.map.replace(curTile, tid, x, y, 1, 1, layer)
