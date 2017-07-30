@@ -1,6 +1,7 @@
 import {error, Layer, LayerManager, log, State, Dialog, minmax} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
 import {AI, AIType} from "../classes/ai"
+import {AStar} from "../classes/astar"
 
 export class GameState extends State {
 
@@ -18,6 +19,7 @@ export class GameState extends State {
     currentTile: Phaser.Tile
     layerManager: LayerManager
     ai: AI
+    music: Phaser.Sound
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -32,17 +34,19 @@ export class GameState extends State {
         this.game.load.image("tilesheet_shooter", "assets/tilesheet_shooter.png")
         this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
         this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
+        this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
         this.game.load.json("trigger", "assets/trigger.json")
+        this.game.load.audio("dark_mix", "assets/dark_mix.ogg")
     }
 
     _create = () => {
+
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
         this.game.physics.startSystem(Phaser.Physics.ARCADE)
 
         this.setupTilemap()
         this.loadTrigger(this.game.cache.getJSON("trigger"))
         this.setupInput()
-
 
         this.cursors = this.game.input.keyboard.createCursorKeys()
 
@@ -92,7 +96,11 @@ export class GameState extends State {
 
         this.trigger()
         this.lastTile = this.currentTile
+        this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
+        let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
+        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
+        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
 
 
 
@@ -129,17 +137,20 @@ export class GameState extends State {
         this.map.addTilesetImage("Indoor", "tilesheet_indoor")
         this.map.addTilesetImage("City", "tilesheet_city")
         this.map.addTilesetImage("Shooter", "tilesheet_shooter")
+        this.map.addTilesetImage("Custom", "tilesheet_custom")
 
         const _layers = [
             "Collision",
             "Ground",
+            "Glass",
             "Roadmarker",
             "Roadmarker2",
             "Environment",
-            "Doors",
             "Carpet",
+            "Doors",
             "Tables",
             "Shelves",
+            "Ontop",
         ]
         _layers.forEach((layer: string) => {
             const idx = layer.toLowerCase()
@@ -207,9 +218,9 @@ export class GameState extends State {
             if (event.code.toLowerCase() === "space") {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
-                if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
-                    this.ai.pickPocket()
-                }
+                //if (dx * dx + dy * dy < 4 * this.map.tileWidth * this.map.tileWidth) {
+                this.ai.pickPocket()
+                //}
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keypress", trigger, event)
@@ -284,11 +295,35 @@ export class GameState extends State {
     updateBatteryIcon() {
         let i = Math.floor(this.energyReserve * 5 / 100)
         let css = `battery${i}`
-        log("Battery is", css)
+        // log("Battery is", css)
         let dom = window.document.getElementById("battery")
         if (!!dom) {
             dom.className = css
         }
     }
 
+    hasCollision(x: number, y: number) {
+        if (x < 0 || y < 0 || x > this.map.width || y > this.map.height) {
+            return true
+        }
+        return this.map.getTile(x, y, "Collision") !== null
+    }
+
+    playSound(key: string, loop: boolean = false) {
+        if (this.music !== undefined) {
+            this.music.fadeOut(1)
+        }
+        this.music = this.game.add.audio(key)
+        this.music.loop = loop
+        this.music.play()
+    }
+
+    replaceTile(x: number, y: number, tid: number, layer?: string) {
+        const curTile = this.map.getTile(x, y, layer).index
+        this.map.replace(curTile, tid, x, y, 1, 1, layer)
+    }
+
+    openDoor(x: number, y: number, tid: number) {
+        this.replaceTile(x, y, tid, "Doors")
+    }
 }

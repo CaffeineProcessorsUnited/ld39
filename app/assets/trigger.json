@@ -7,7 +7,6 @@
         "keyA": "this.layerManager.sort(['lights', 'player'])",
         "keyS": "this.layerManager.sort(['player', 'lights'])"
       }
-
     },
     {
       "x": 0,
@@ -24,6 +23,25 @@
       "enter": "console.log('Hi, Mill')",
       "exit": "console.log('Bye, Mill')",
       "each": "console.log('Frame, Mill')"
+    },
+    {
+      "x":40,
+      "y":20,
+      "enter": "this.openDoor(40,19,544);this.openDoor(41,19,547)",
+      "each": "console.log(this.map.getTile(40, 18).index)"
+    },
+    {
+      "x":41,
+      "y":20,
+      "enter": "this.openDoor(40,19,544);this.openDoor(41,19,547)",
+      "each": "console.log(this.map.getTile(41, 18).index)"
+    },
+    {
+      "x":77,
+      "y":21,
+      "keypress":{
+        "Space":"this.playSound('dark_mix')"
+      }
     }
   ]
 }
