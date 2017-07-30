@@ -6,7 +6,7 @@ import {AStar} from "../classes/astar"
 export class GameState extends State {
 
     _energyReserve: number = 100
-    energyLossPerSecond: number = 0.1
+    energyLossPerSecond: number = 5
 
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
 
@@ -20,6 +20,7 @@ export class GameState extends State {
     layerManager: LayerManager
     ai: AI
     music: Phaser.Sound
+    unlockedLevel: boolean[] = [false, false, false]
 
     currentTrigger: Trigger
 
@@ -59,9 +60,12 @@ export class GameState extends State {
         this.ai = new AI(AIType.GUARD, this)
         this.ai.pickPocket()
 
-        setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
+        setTimeout(() => {
+            this.ai.sitDown(125, 125)
+        }, 5000)
 
         window.document.getElementById("led3")!.style.animationDuration = "4s"
+        this.game.forceSingleUpdate = true
     }
 
     _update = () => {
@@ -73,27 +77,44 @@ export class GameState extends State {
         if (this.energyReserve < 0) {
             this.gameOver()
         }
+        let damping = 100
+        let max = 200
+        let rate = 80
+
+        if (this.ref("player", "player").body.velocity.x >= max) {this.ref("player", "player").body.velocity.x = max}
+        if (this.ref("player", "player").body.velocity.y >= max) {this.ref("player", "player").body.velocity.y = max}
+        if (this.ref("player", "player").body.velocity.x <= max * -1) {this.ref("player", "player").body.velocity.x = max * -1}
+        if (this.ref("player", "player").body.velocity.y <= max * -1) {this.ref("player", "player").body.velocity.y = max * -1}
 
 
-        this.ref("player", "player").body.velocity.x = 0
-        this.ref("player", "player").body.velocity.y = 0
+            if (this.cursors.left.isDown) {
+                this.ref("player", "player").body.velocity.x -= rate
+                // this.ref("player", "player").animations.play("left")
+            } else if (this.cursors.right.isDown) {
+                this.ref("player", "player").body.velocity.x += rate
+                // this.ref("player", "player").animations.play("right")
+            } else {
+                if (this.ref("player", "player").body.velocity.x >= damping){
+                    this.ref("player", "player").body.velocity.x -= damping
+                } else if (this.ref("player", "player").body.velocity.x <= damping * -1) {
+                    this.ref("player", "player").body.velocity.x += damping
+                } else {this.ref("player", "player").body.velocity.x = 0}
+            }
 
-        if (this.cursors.left.isDown) {
-            this.ref("player", "player").body.velocity.x = -200
-            // this.ref("player", "player").animations.play("left")
-        } else if (this.cursors.right.isDown) {
-            this.ref("player", "player").body.velocity.x = 200
-            // this.ref("player", "player").animations.play("right")
-        }
-        if (this.cursors.up.isDown) {
-            this.ref("player", "player").body.velocity.y = -200
-            // this.ref("player", "player").animations.play("up")
-        } else if (this.cursors.down.isDown) {
-            this.ref("player", "player").body.velocity.y = 200
-            // this.ref("player", "player").animations.play("down")
-        } else {
+            if (this.cursors.up.isDown) {
+                this.ref("player", "player").body.velocity.y -= rate
+                // this.ref("player", "player").animations.play("up")
+            } else if (this.cursors.down.isDown) {
+                this.ref("player", "player").body.velocity.y += rate
+                // this.ref("player", "player").animations.play("down")
+            } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
+                if (this.ref("player", "player").body.velocity.y >= damping){
+                    this.ref("player", "player").body.velocity.y -= damping
+                } else if (this.ref("player", "player").body.velocity.y <= damping * -1)  {
+                    this.ref("player", "player").body.velocity.y += damping
+                } else {this.ref("player", "player").body.velocity.y = 0}
         }
 
         this.trigger()
@@ -101,9 +122,8 @@ export class GameState extends State {
         this.ai.onPlayerMove(this.ref("player", "player").position)
         this.ai.update()
         let tile = this.map.getTile(this.lastTile.x, this.lastTile.y)
-        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
-        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
-
+        //this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", id:" + tile.index + ", layer:" + tile.layer.name, 30, 115)
+        //this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 135)
 
 
         let batled = window.document.getElementById("led2")!
@@ -130,8 +150,8 @@ export class GameState extends State {
     }
 
     _render = () => {
-        this.game.debug.body(this.ref("player", "player"))
-        this.game.debug.cameraInfo(this.game.camera, 32, 32)
+        //this.game.debug.body(this.ref("player", "player"))
+        //this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
     setupTilemap() {
@@ -204,18 +224,22 @@ export class GameState extends State {
             }, this)
         }
         this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
+            window.document.getElementById("led4")!.style.animationDuration = "500ms"
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keydown", trigger, event)
             })
+
         }
 
         this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
+            window.document.getElementById("led4")!.style.animationDuration = "0s"
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keyup", trigger, event)
             })
         }
 
         this.game.input.keyboard.onPressCallback = (input: string, event: KeyboardEvent) => {
+            console.log("press")
             if (event.code.toLowerCase() === "space") {
                 let dx = this.ai.sprite.position.x - this.currentTile.worldX
                 let dy = this.ai.sprite.position.y - this.currentTile.worldY
@@ -275,7 +299,7 @@ export class GameState extends State {
     }
 
     gameOver() {
-        console.log("GAME OVER")
+        //console.log("GAME OVER")
     }
 
     get energyReserve() {
@@ -315,7 +339,15 @@ export class GameState extends State {
         if (x < 0 || y < 0 || x > this.map.width || y > this.map.height) {
             return true
         }
-        return this.map.getTile(x, y, "Collision") !== null
+        const coll = this.map.getTile(x, y, "Collision") !== null
+        // this.game.debug.rectangle(
+        //     new Phaser.Rectangle(
+        //         x*this.map.tileWidth,
+        //         y*this.map.tileHeight,
+        //         20,
+        //         20),
+        //     coll ? "#ff0000" : "#00ff00")
+        return coll
     }
 
     playSound(key: string, loop: boolean = false) {
@@ -332,8 +364,14 @@ export class GameState extends State {
         this.map.replace(curTile, tid, x, y, 1, 1, layer)
     }
 
-    openDoor(x: number, y: number, tid: number) {
-        this.replaceTile(x, y, tid, "Doors")
+    openDoor(x: number, y: number, tid: number, level: number) {
+        if (this.unlockedLevel[level]) {
+            this.replaceTile(x, y, tid, "Doors")
+        }
+    }
+
+    unlockLevel(idx: number) {
+        this.unlockedLevel[idx] = true
     }
 
     showDialogAbove(name: string, x: number, y: number, text: string) {

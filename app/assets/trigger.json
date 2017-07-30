@@ -39,13 +39,18 @@
     {
       "x":40,
       "y":20,
-      "enter": "this.openDoor(40,19,544);this.openDoor(41,19,547)",
+      "enter": "this.openDoor(40,19,544,0);this.openDoor(41,19,547,0)",
       "each": "console.log(this.map.getTile(40, 18).index)"
+    },
+    {
+      "x":40,
+      "y":25,
+      "enter": "this.unlockLevel(0); console.log('Unlocked level')"
     },
     {
       "x":41,
       "y":20,
-      "enter": "this.openDoor(40,19,544);this.openDoor(41,19,547)",
+      "enter": "this.openDoor(40,19,544,0);this.openDoor(41,19,547,0)",
       "each": "console.log(this.map.getTile(41, 18).index)"
     },
     {

@@ -38,7 +38,7 @@ export class AStar {
 
             let current = currentNodes.shift()!
             // console.log("mmmm", current)
-            if (current.equals(to) || iter > 200) {
+            if (current.equals(to) || iter > 500) {
                 return this.reconstructPath(cameFrom, to)
             }
             completedNodes.push(current)
@@ -83,7 +83,7 @@ export class AStar {
         // console.log("#######", current, cameFrom)
         while (cameFrom[prev.toString()] !== undefined) {
             prev = cameFrom[prev.toString()]
-            path.push(prev)
+            path.unshift(prev)
             // console.log("+++", prev)
             // this.gamestate.game.debug.rectangle(
             //     new Phaser.Rectangle(
@@ -113,10 +113,10 @@ export class AStar {
     private getNeighbors(from: Phaser.Point): Phaser.Point[] {
         let ret = []
         for (const delta of [
-            [-1, -1],
-            [-1, 1],
-            [1, -1],
-            [1, 1],
+            [-1, 0],
+            [1, 0],
+            [0, -1],
+            [0, 1],
         ]) {
             if (!this.gamestate.hasCollision(from.x + delta[0], from.y + delta[1])) {
                 ret.push(new Phaser.Point(from.x + delta[0], from.y + delta[1]))

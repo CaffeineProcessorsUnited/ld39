@@ -11,6 +11,7 @@ export class BootState extends State {
         window.document.getElementById("led1")!.style.fill = "MediumTurquoise"
         window.document.getElementById("led2")!.style.fill = "lime"
         window.document.getElementById("led3")!.style.animationDuration = "1s"
+        window.document.getElementById("battery")!.className = "battery4"
 
 
     }
