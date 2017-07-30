@@ -25,8 +25,7 @@
 
         #laptop {
             width: auto;
-            height: 80vh;
-            margin-top: 10vh;
+            height: 99vh;
             overflow: hidden;
 
         }
@@ -34,8 +33,8 @@
         #battery {
             background-repeat: no-repeat;
             background-size: contain;
-            width: 80px;
-            height: 20px;
+            position: absolute;
+
         }
 
         .battery0 {
@@ -143,13 +142,13 @@
         }
 
         #led1 {
-            fill: MediumTurquoise;
+            fill: #cccccc;
         }
 
         #led2 {
             fill: #cccccc;
             animation-name: blink-red;
-            animation-duration: 1s;
+            animation-duration: 0s;
             animation-iteration-count: infinite;
             animation-timing-function: steps(1);
         }
@@ -157,7 +156,7 @@
         #led3 {
             fill: #cccccc;
             animation-name: act-green;
-            animation-duration: 1s;
+            animation-duration: 0s;
             animation-iteration-count: infinite;
             animation-direction: alternate;
         }
@@ -165,7 +164,7 @@
         #led4 {
             fill: #cccccc;
             animation-name: act-yellow;
-            animation-duration: 1s;
+            animation-duration: 0s;
             animation-iteration-count: infinite;
             animation-direction: alternate;
             animation-timing-function: steps(1);
@@ -5418,14 +5417,21 @@
                     inkscape:connector-curvature="0"
                     style="fill:#ffffff"/>
         </g>
+
+    <path
+            style="display:inline;stroke-width:0.56157428"
+            inkscape:connector-curvature="0"
+            id="path6293"
+            d="m 499.44539,296.94422 h 8.56534 a 0.67305347,1.4673 0 0 1 0.67305,1.4673 v 2.7798 a 0.67305347,1.4673 0 0 1 -0.67305,1.4673 h -8.56534 a 0.67305347,1.4673 0 0 1 -0.67305,-1.4673 v -2.7798 a 0.67305347,1.4673 0 0 1 0.67305,-1.4673" />
+    <path
+            style="display:inline;fill:#333333;filter:url(#ns)"
+            inkscape:connector-curvature="0"
+            id="batpos"
+            d="m 482.64538,296.94422 h 27.16 a 2.1342,1.4673 0 0 1 2.1342,1.4673 v 2.7798 a 2.1342,1.4673 0 0 1 -2.1342,1.4673 h -27.16 a 2.1342,1.4673 0 0 1 -2.1342,-1.4673 v -2.7798 a 2.1342,1.4673 0 0 1 2.1342,-1.4673"
+            transform="matrix(0.3153657,0,0,1,347.23559,0)"
+            inkscape:label="batpos" />
+
     </g>
-    <rect
-            style="display:inline;fill:none;stroke:#000000"
-            id="rect5034"
-            width="10.926888"
-            height="6.1611905"
-            x="113.745"
-            y="123.90833"/>
 </svg>
 <div id="game"></div>
 </body>

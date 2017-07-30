@@ -54,6 +54,8 @@ export class GameState extends State {
         this.ai.pickPocket()
 
         setTimeout(() => {this.ai.sitDown(125, 125)}, 5000)
+
+        window.document.getElementById("led3").style.animationDuration = "4s"
     }
 
     _update = () => {
@@ -91,6 +93,30 @@ export class GameState extends State {
         this.trigger()
         this.lastTile = this.currentTile
         this.ai.update()
+
+
+
+        let batled = window.document.getElementById("led2")
+        if (this.energyReserve <= 0) {
+            batled.style.fill = "#cccccc"
+            batled.style.animationDuration = "0s"
+            window.document.getElementById("led1").style.fill = "#cccccc"
+            window.document.getElementById("led3").style.fill = "#cccccc"
+            window.document.getElementById("led3").style.animationDuration = "0s"
+            window.document.getElementById("led4").style.fill = "#cccccc"
+            window.document.getElementById("led4").style.animationDuration = "0s"
+
+        } else if (this.energyReserve < 10) {
+            batled.style.animationName = "blink-red"
+            batled.style.animationDuration = "1s"
+        } else if (this.energyReserve < 20) {
+            batled.style.fill = "orange"
+            batled.style.animationDuration = "0s"
+
+        } else {
+            batled.style.fill = "lime"
+            batled.style.animationDuration = "0s"
+        }
     }
     _render = () => {
         this.game.debug.body(this.ref("player", "player"))

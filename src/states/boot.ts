@@ -8,6 +8,11 @@ export class BootState extends State {
             this.loader.resize()
         })
         this.loader.resize()
+        window.document.getElementById("led1").style.fill = "MediumTurquoise"
+        window.document.getElementById("led2").style.fill = "lime"
+        window.document.getElementById("led3").style.animationDuration = "1s"
+
+
     }
 
     _preload = () => {
