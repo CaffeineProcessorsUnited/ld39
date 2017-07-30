@@ -1,63 +1,165 @@
 {
   "trigger": [
     {
-      "x": 0,
-      "y": 0,
-      "keypress": {
-        "keyA": "this.layerManager.sort(['lights', 'player'])",
-        "keyS": "this.layerManager.sort(['player', 'lights'])"
-      }
-    },
-    {
       "x": 1,
       "y": 5,
-      "enter": "this.story('tutorial0-enter')",
-      "exit": "this.story('tutorial0-exit')"
+      "enter": "story:tutorial0-enter",
+      "exit": "story:tutorial0-exit"
     },
     {
       "x": 2,
       "y": 5,
-      "enter": "this.story('tutorial1-enter')",
-      "exit": "this.story('tutorial1-exit')"
-    },
-    {
-      "x": 0,
-      "y": 2,
-      "enter": "console.log('Hi, House');this.questStuff();",
-      "exit": "console.log('Bye, House')",
-      "keypress": {
-        "Space": "this.changeState('menu')"
-      }
-    },
-    {
-      "x": 2,
-      "y": 13,
-      "enter": "console.log('Hi, Mill')",
-      "exit": "console.log('Bye, Mill')",
-      "each": "console.log('Frame, Mill')"
+      "enter": "story:tutorial1-enter",
+      "exit": "story:tutorial1-exit"
     },
     {
       "x":40,
       "y":20,
-      "enter": "this.openDoor(40,19,544,0);this.openDoor(41,19,547,0)",
-      "each": "console.log(this.map.getTile(40, 18).index)"
-    },
-    {
-      "x":40,
-      "y":25,
-      "enter": "this.unlockLevel(0); console.log('Unlocked level')"
+      "enter": "story:opendoor-mensa-upper"
     },
     {
       "x":41,
       "y":20,
-      "enter": "this.openDoor(40,19,544,0);this.openDoor(41,19,547,0)",
-      "each": "console.log(this.map.getTile(41, 18).index)"
+      "enter": "story:opendoor-mensa-upper"
+    },
+    {
+      "x":40,
+      "y":18,
+      "enter": "story:opendoor-mensa-upper"
+    },
+    {
+      "x":41,
+      "y":18,
+      "enter": "story:opendoor-mensa-upper"
+    },
+    {
+      "x":50,
+      "y":27,
+      "enter": "story:opendoor-mensa-lower"
+    },
+    {
+      "x":50,
+      "y":28,
+      "enter": "story:opendoor-mensa-lower"
+    },
+    {
+      "x":52,
+      "y":27,
+      "enter": "story:opendoor-mensa-lower"
+    },
+    {
+      "x":52,
+      "y":28,
+      "enter": "story:opendoor-mensa-lower"
+    },
+    {
+      "x":64,
+      "y":9,
+      "enter": "story:opendoor-mensa-inner"
+    },
+    {
+      "x":64,
+      "y":10,
+      "enter": "story:opendoor-mensa-inner"
+    },
+    {
+      "x":66,
+      "y":9,
+      "enter": "story:opendoor-mensa-inner"
+    },
+    {
+      "x":66,
+      "y":10,
+      "enter": "story:opendoor-mensa-inner"
+    },
+    {
+      "x":78,
+      "y":36,
+      "enter": "story:opendoor-mensa-exit"
+    },
+    {
+      "x":78,
+      "y":37,
+      "enter": "story:opendoor-mensa-exit"
+    },
+    {
+      "x":41,
+      "y":25,
+      "enter": "story:unlock-mensa"
+    },
+    {
+      "x":83,
+      "y":36,
+      "keypress": {
+        "Space": "story:unlock-library"
+      }
+    },
+    {
+      "x":84,
+      "y":37,
+      "keypress": {
+        "Space": "story:unlock-library"
+      }
+    },
+    {
+      "x":92,
+      "y":38,
+      "enter": "story:opendoor-library-upper"
+    },
+    {
+      "x":93,
+      "y":38,
+      "enter": "story:opendoor-library-upper"
+    },
+    {
+      "x":92,
+      "y":40,
+      "enter": "story:opendoor-library-upper"
+    },
+    {
+      "x":93,
+      "y":40,
+      "enter": "story:opendoor-library-upper"
+    },
+    {
+      "x":89,
+      "y":41,
+      "enter": "story:opendoor-library-lower"
+    },
+    {
+      "x":89,
+      "y":42,
+      "enter": "story:opendoor-library-lower"
+    },
+    {
+      "x":91,
+      "y":41,
+      "enter": "story:opendoor-library-lower"
+    },
+    {
+      "x":91,
+      "y":42,
+      "enter": "story:opendoor-library-lower"
+    },
+    {
+      "x":97,
+      "y":45,
+      "enter": "story:message-under-construction-enter",
+      "exit": "story:message-under-construction-exit"
     },
     {
       "x":77,
       "y":21,
       "keypress":{
-        "Space":"this.playSound('dark_mix')"
+        "Space":"play:dark_mix"
+      },
+      "exit":"stop:dark_mix"
+    },
+    {
+      "x":9,
+      "y":9,
+      "keypress": {
+        "Space": "story:teleport"
       }
     }
   ]
