@@ -65,20 +65,20 @@ export class Trigger {
                 case "story":
                 default:
                     return () => {
-                        this.gs.story(this, action)
+                        this.gs.story(this, d)
                     }
                 case "play":
                     return () => {
-                        this.gs.play(this, action)
+                        this.gs.play(this, d)
                     }
                 case "stop":
                     return () => {
-                        this.gs.stop(this, action)
+                        this.gs.stop(this, d)
                     }
             }
         }
         return () => {
-            this.gs.story(this, action)
+            this.gs.story(this, d)
         }
     }
 
