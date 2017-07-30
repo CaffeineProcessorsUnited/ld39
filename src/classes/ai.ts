@@ -36,6 +36,7 @@ export class AI {
     reservedTile?: Phaser.Point
     onPathCompleteHandler: () => void
     spriteSound: Phaser.Sound
+    spawnPoint: Phaser.Point
     private gameState: GameState
     private player: any
     private tileSize: number

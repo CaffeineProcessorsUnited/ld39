@@ -78,7 +78,7 @@ export class Trigger {
             }
         }
         return () => {
-            this.gs.story(this, d)
+            this.gs.story(this, action)
         }
     }
 

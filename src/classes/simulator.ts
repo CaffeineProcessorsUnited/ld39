@@ -5,23 +5,23 @@ import {Pathfinder} from "./pathfinder"
 
 export class Simulator {
     gameState: GameState
-    entities: { [index: number]: AI[] } = {}
+    entities: { [index: string]: AI[] } = {}
 
     constructor(gameState: GameState) {
         this.gameState = gameState
     }
 
-    spawn(type: AIType, state: AIState) {
+    spawn(type: AIType, state: AIState, spawn?: Phaser.Point) {
         if (nou(this.entities[type.valueOf()])) {
             this.entities[type.valueOf()] = []
         }
         let i = this.entities[type.valueOf()].push(new AI(type, this.gameState)) - 1
         this.entities[type.valueOf()][i].state = state
-        this.respawn(this.entities[type.valueOf()][i])
+        this.respawn(this.entities[type.valueOf()][i], spawn)
 
     }
 
-    respawn(object: AI) {
+    respawn(object: AI, spawn?: Phaser.Point) {
         let type = object.type
         let state = object.state
         switch (type) {
@@ -37,6 +37,11 @@ export class Simulator {
                 break
         }
         let path = this.getPath(type)
+        if (!nou(spawn)) {
+            path.spawn = spawn
+        } else if (!nou(object.spawnPoint)) {
+            path.spawn = object.spawnPoint
+        }
         log(path)
         switch (state) {
             case AIState.DRIVING:
@@ -89,7 +94,7 @@ export class Simulator {
     }
 
     update() {
-        Object.getOwnPropertyNames(this.entities).forEach((type: number) => {
+        Object.getOwnPropertyNames(this.entities).forEach((type: string) => {
             this.entities[type].forEach((entity: AI) => {
                 entity.onPlayerMove(this.gameState.ref("player", "player").position)
                 entity.update()
@@ -98,7 +103,7 @@ export class Simulator {
     }
 
     pickPocket() {
-        Object.getOwnPropertyNames(this.entities).forEach((type: number) => {
+        Object.getOwnPropertyNames(this.entities).forEach((type: string) => {
             this.entities[type].forEach((entity: AI) => {
                 let dx = entity.position.x - this.gameState.currentTile.worldX
                 let dy = entity.position.y - this.gameState.currentTile.worldY

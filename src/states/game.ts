@@ -69,6 +69,7 @@ export class GameState extends State {
         this.simulator = new Simulator(this)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE)
+        this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(10, 10))
 
         setTimeout(() => {
             //this.npc[0].sitDown(125, 125)
