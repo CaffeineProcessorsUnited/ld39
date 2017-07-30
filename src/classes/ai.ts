@@ -9,6 +9,8 @@ export enum AIState {
     TALKING,
     CHASING,
     SITTING,
+    DRIVING,
+    PARKING,
 }
 
 export enum AIType {
@@ -20,6 +22,7 @@ export enum AIType {
     LEARNING,
     WORKING,
     SLEEPING,
+    VEHICLE,
 }
 
 export class AI {
@@ -306,7 +309,7 @@ export class AI {
         if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
             return false
         }
-        const tile = this.pathfinder.pos2tile(new Phaser.Point(x,y))
+        const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
         if (this.gameState.hasCollision(tile.x, tile.y)) {
             return false
         }
@@ -351,10 +354,14 @@ export class AI {
             this.state = AIState.STROLL
             this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
             while (!this.setTarget(
-                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize/2,
-                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize/2)) {
+                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
+                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
                 console.log("Cannot find suitable location for stroll")
             }
         }, delay * 1000)
+    }
+
+    setTilePosition(pos: Phaser.Point) {
+        this.sprite.position = this.pathfinder.pos2tile(pos)
     }
 }
