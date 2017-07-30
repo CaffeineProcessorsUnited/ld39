@@ -199,6 +199,7 @@ export class AI {
 
             if (this.canReach()) {
                 log("CLUB")
+                this.giveUp.reset()
                 this.canBeRobbed = true
                 if (this.type === AIType.VEHICLE) {
                     this.gameState.clubPlayer(40)
