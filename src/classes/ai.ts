@@ -604,7 +604,7 @@ export class AI {
             this.sprite.y = tile.worldY + tile.centerY
             this.replacedTile = tile.index
             log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
-            this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
+            // this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
         }
         this.state = AIState.SITTING
         return true
