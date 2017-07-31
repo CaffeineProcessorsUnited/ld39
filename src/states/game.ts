@@ -27,7 +27,10 @@ export class GameState extends State {
     unlockedLevel: boolean[] = [false, false, false]
     currentTrigger: Trigger
     simulator: Simulator
-    speedBoost: boolean
+    walking: boolean = false
+    sprinting: boolean = false
+    walkingSound: Phaser.Sound
+
     _init = (map: string) => {
         // TODO: Select map to load
     }
@@ -53,6 +56,9 @@ export class GameState extends State {
         })
         range(0, 6).forEach((i: number) => {
             this.loader.game.load.audio(`walk${i}`, `assets/audio/walk${i}.ogg`)
+        })
+        range(0, 2).forEach((i: number) => {
+            this.loader.game.load.audio(`run${i}`, `assets/audio/run${i}.ogg`)
         })
         range(0, 8).forEach((i: number) => {
             this.loader.game.load.audio(`piano${i}`, `assets/audio/piano${i}.ogg`)
@@ -103,7 +109,7 @@ export class GameState extends State {
         let damping = 100
         let max = 200
         let rate = 80
-        if (this.speedBoost) {
+        if (this.sprinting) {
             max = 1000
             rate = 900
         }
@@ -122,12 +128,15 @@ export class GameState extends State {
         }
 
 
+        let walking = false
         if (this.cursors.left.isDown) {
             this.ref("player", "player").body.velocity.x -= rate
             // this.ref("player", "player").animations.play("left")
+            walking = true
         } else if (this.cursors.right.isDown) {
             this.ref("player", "player").body.velocity.x += rate
             // this.ref("player", "player").animations.play("right")
+            walking = true
         } else {
             if (this.ref("player", "player").body.velocity.x >= damping) {
                 this.ref("player", "player").body.velocity.x -= damping
@@ -141,9 +150,11 @@ export class GameState extends State {
         if (this.cursors.up.isDown) {
             this.ref("player", "player").body.velocity.y -= rate
             // this.ref("player", "player").animations.play("up")
+            walking = true
         } else if (this.cursors.down.isDown) {
             this.ref("player", "player").body.velocity.y += rate
             // this.ref("player", "player").animations.play("down")
+            walking = true
         } else {
             // this.ref("player", "player").animations.stop()
             // this.ref("player", "player").frame = 4
@@ -155,6 +166,19 @@ export class GameState extends State {
                 this.ref("player", "player").body.velocity.y = 0
             }
         }
+
+        if (walking) {
+            if (!this.walking) {
+                // started walking
+                this.walkSound(true)
+            }
+        } else {
+            if (this.walking) {
+                // stopped walking
+                this.walkSound(false)
+            }
+        }
+        this.walking = walking
 
         this.trigger()
         this.lastTile = this.currentTile
@@ -184,6 +208,7 @@ export class GameState extends State {
             window.document.getElementById("led3")!.style.animationDuration = "0s"
             window.document.getElementById("led4")!.style.fill = "#cccccc"
             window.document.getElementById("led4")!.style.animationDuration = "0s"
+            this.gameOver()
 
         } else if (this.energyReserve < 10) {
             batled.style.animationName = "blink-red"
@@ -195,10 +220,6 @@ export class GameState extends State {
         } else {
             batled.style.fill = "lime"
             batled.style.animationDuration = "0s"
-        }
-
-        if (this.energyReserve <= 0) {
-            this.gameOver()
         }
     }
     _render = () => {
@@ -267,9 +288,6 @@ export class GameState extends State {
                 "name": "Tables",
             },
             {
-                "name": "Shelves",
-            },
-            {
                 "name": "Ontop",
             },
         ]
@@ -325,7 +343,10 @@ export class GameState extends State {
         this.game.input.keyboard.onDownCallback = (event: KeyboardEvent) => {
             window.document.getElementById("led4")!.style.animationDuration = "500ms"
             if (event.shiftKey) {
-                this.speedBoost = true
+                if (!this.sprinting) {
+                    this.sprinting = true
+                    this.updateWalkingSound()
+                }
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keydown", trigger, event)
@@ -336,7 +357,10 @@ export class GameState extends State {
         this.game.input.keyboard.onUpCallback = (event: KeyboardEvent) => {
             window.document.getElementById("led4")!.style.animationDuration = "0s"
             if (!event.shiftKey) {
-                this.speedBoost = false
+                if (this.sprinting) {
+                    this.sprinting = false
+                    this.updateWalkingSound()
+                }
             }
             this.triggers.forEach((trigger: Trigger) => {
                 actor("keyup", trigger, event)
@@ -692,5 +716,31 @@ export class GameState extends State {
 
     pickUp(device: number) {
         this.energyReserve += device
+    }
+
+    updateWalkingSound() {
+        let playing = false
+        if (!nou(this.walkingSound)) {
+            playing = this.walkingSound.isPlaying
+            this.walkingSound.stop()
+        }
+        this.walkingSound = this.game.add.audio(`${this.sprinting ? "run" : "walk"}${choose(range(0, this.sprinting ? 2 : 6))}`)
+        this.walkingSound.loop = true
+        if (playing) {
+            this.walkingSound.play()
+        }
+    }
+
+    walkSound(enable: boolean) {
+        if (enable) {
+            if (nou(this.walkingSound)) {
+                this.updateWalkingSound()
+            }
+            this.walkingSound.play()
+        } else {
+            if (!nou(this.walkingSound)) {
+                this.walkingSound.stop()
+            }
+        }
     }
 }
