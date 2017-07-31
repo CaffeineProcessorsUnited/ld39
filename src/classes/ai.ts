@@ -3,7 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator"
-import {choose, random, trace} from "../sgl/util"
+import {random} from "../sgl/util"
 
 export enum AIState {
     IDLE,
@@ -36,11 +36,8 @@ export class AI {
     state: AIState
     type: AIType
     alert: number
-    reservedTile?: Phaser.Point
     onPathCompleteHandler: () => void
     spriteSound: Phaser.Sound
-    _spawnPoint: Phaser.Point
-    _startPoint: Phaser.Point
     canBeRobbed: boolean
     private gameState: GameState
     private player: any
@@ -52,6 +49,8 @@ export class AI {
     private currentPoint: number
     private targetX: number
     private targetY: number
+    private reservedX: number
+    private reservedY: number
     private armLength: number
     private maxWalkDistance: number
     private replacedTile: number
@@ -59,6 +58,7 @@ export class AI {
     private alertRadSq: number
     private device: number
     private spawned: boolean = false
+    private findingPath = false
 
     constructor(simulator: Simulator, type: AIType) {
         this.simulator = simulator
@@ -179,7 +179,7 @@ export class AI {
                 this.armLength = 10
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0)
-                this.goHome = new IncRand(0.06, 20, 300)
+                this.goHome = new IncRand(0.06, 5, 6)
                 this.alertRadSq = 0
                 spriteKey = "vehicle"
                 break
@@ -195,13 +195,40 @@ export class AI {
         this.player = this.gameState.ref("player", "player")
     }
 
+    private _reservedTile?: Phaser.Point
+
+    get reservedTile() {
+        return this._reservedTile!
+    }
+
+    set reservedTile(point: Phaser.Point) {
+        this._reservedTile = point
+        if (!nou(point)) {
+            let pos = this.pathfinder.tile2pos(point!)
+            this.reservedX = pos.x
+            this.reservedY = pos.y
+        }
+    }
+
+    _spawnPoint: Phaser.Point
+
+    get spawnPoint() {
+        return this._spawnPoint
+    }
+
     set spawnPoint(point: Phaser.Point) {
         this._spawnPoint = point
         this.startPoint = point
     }
 
-    get spawnPoint() {
-        return this._spawnPoint
+    _startPoint: Phaser.Point
+
+    get startPoint() {
+        return this._startPoint
+    }
+
+    set startPoint(point: Phaser.Point) {
+        this._startPoint = point
     }
 
     private _plannedPoints: Phaser.Point[]
@@ -220,20 +247,28 @@ export class AI {
     }
 
     update() {
-        // this.plannedPoints.forEach(value => {
-        //     this.gameState.game.debug.rectangle(
-        //         new Phaser.Rectangle(
-        //             value.x,
-        //             value.y,
-        //             20,
-        //             20),
-        //         "#00ffff")
-        // })
+        // console.log("UPDATE", this.type, this.state)
+        this.plannedPoints.forEach(value => {
+            this.gameState.game.debug.rectangle(
+                new Phaser.Rectangle(
+                    value.x,
+                    value.y,
+                    20,
+                    20),
+                "#00ffff")
+        })
         if (!this.spawned) {
             let pos = this.pathfinder.tile2pos(this.startPoint).clone()
             this.sprite.x = pos.x
             this.sprite.y = pos.y
             this.spawned = true
+        }
+
+        if (this.state === AIState.SITTING) {
+            if (this.goHome.getRand()) {
+                console.error("STANDUP")
+                this.standUp()
+            }
         }
 
         if (this.type === AIType.VEHICLE) {
@@ -243,10 +278,11 @@ export class AI {
             this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         }
         this.pathfinder.setCurrent(this.position)
+        this.sound()
 
-        if (this.state === AIState.SITTING && this.goHome.getRand()) {
-            console.error("STANDUP")
-            this.standUp()
+        this.sound()
+        if (this.findingPath) {
+            return
         }
 
         if (this.state === AIState.CHASING) {
@@ -299,17 +335,21 @@ export class AI {
                 !nou(this.targetY) &&
                 this.sprite.x !== this.targetX &&
                 this.sprite.y !== this.targetY) {
+                // log("GOT TARGET", this.plannedPoints)
                 this.clearTimeout()
+                this.speed = 0
                 if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
                     this.speed = this.maxSpeed
                 } else {
                     this.setStroll()
                 }
-            } else if (!nou(this.reservedTile)) {
+            } else if (!nou(this.reservedTile) && this.sprite.x !== this.reservedX &&
+                this.sprite.y !== this.reservedY) {
+                // log("GOT RESERVED")
                 let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
                 this.speed = this.maxSpeed
                 this.setTarget(newTarget.x, newTarget.y)
-            } else {
+            } else if (nou(this.targetX) || nou(this.targetY)) {
                 this.speed = 0
                 switch (this.type) {
                     case AIType.LEARNING:
@@ -322,7 +362,7 @@ export class AI {
                         break
                     case AIType.VEHICLE:
                         if (this.state === AIState.PARKING) {
-                            this.sitDown(this.position.x, this.position.y)
+                            // this.sitDown(this.position.x, this.position.y)
                         }
                         break
                     default:
@@ -339,8 +379,6 @@ export class AI {
                 this.onPathComplete()
             }
         }
-
-        this.sound()
 
         this.move()
     }
@@ -410,6 +448,7 @@ export class AI {
     sound() {
         if (!nou(this.spriteSound)) {
             if (this.type === AIType.VEHICLE) {
+                log(this.speed)
                 if (this.speed > 0) {
                     if (!this.spriteSound.isPlaying) {
                         this.spriteSound.loop = true
@@ -502,27 +541,37 @@ export class AI {
     }
 
     sitDown(x: number, y: number): boolean {
-        let tile = this.gameState.getTileAt(x, y, "Tables")
-        if (nou(tile)) {
-            error(`Can't sit down at ${x}, ${y} because it has no tile to replace`)
-            return false
+        log("SITDOWN")
+        if (this.type !== AIType.VEHICLE) {
+            let tile = this.gameState.getTileAt(x, y, "Tables")
+            if (nou(tile)) {
+                error(`Can't sit down at ${x}, ${y} because it has no tile to replace`)
+                return false
+            }
+            this.sprite.x = tile.worldX + tile.centerX
+            this.sprite.y = tile.worldY + tile.centerY
+            this.replacedTile = tile.index
+            log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
+            this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
         }
-        this.sprite.x = tile.worldX + tile.centerX
-        this.sprite.y = tile.worldY + tile.centerY
         this.state = AIState.SITTING
-        this.replacedTile = tile.index
-        log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
-        this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
         return true
     }
 
     standUp() {
-        let tile = this.pathfinder.pos2tile(this.position)
-        this.state = AIState.IDLE
-        this.canBeRobbed = false
-        log(`Replace tile id ${this.getTileId()} with ${this.replacedTile} at ${tile.x}, ${tile.y}`)
-        this.gameState.map.replace(this.getTileId(), this.replacedTile, tile.x, tile.y, 1, 1, "Tables")
-        this.setTarget(this.spawnPoint.x, this.spawnPoint.y)
+        if (this.type !== AIType.VEHICLE) {
+            let tile = this.pathfinder.pos2tile(this.position)
+            this.state = AIState.IDLE
+            this.canBeRobbed = false
+            log(`Replace tile id ${this.getTileId()} with ${this.replacedTile} at ${tile.x}, ${tile.y}`)
+            this.gameState.map.replace(this.getTileId(), this.replacedTile, tile.x, tile.y, 1, 1, "Tables")
+        } else {
+            this.state = AIState.PARKING
+        }
+        this.speed = this.maxSpeed
+        let pos = this.pathfinder.tile2pos(this.spawnPoint)
+        log(this.spawnPoint, pos)
+        this.setTarget(pos.x, pos.y)
     }
 
     clearTimeout() {
@@ -540,10 +589,17 @@ export class AI {
     }
 
     setTarget(x: number, y: number): boolean {
+        if (this.findingPath) {
+            return false
+        }
         if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
             return false
         }
         const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
+        if (this.position.x > 80 * 64) {
+            console.trace("SPAWNING PLAYER", tile, this)
+        }
+
         if (this.getCollider()(tile.x, tile.y)) {
             return false
         }
@@ -558,6 +614,8 @@ export class AI {
             this.targetY = y
         } else {
             this.pathfinder.setTarget(new Phaser.Point(x, y))
+            this.pathfinder.forceUpdate()
+            this.findingPath = true
         }
         return true
     }
@@ -569,18 +627,21 @@ export class AI {
         }
     }
 
-    newTargets(pos: Phaser.Point[]) {
+    newTargets(pos: Phaser.Point[], done: boolean) {
         this.plannedPoints = pos
         this.currentPoint = 0
-        if (this.plannedPoints.length > 0) {
-            this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
-            this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
+        if (done) {
+            if (this.plannedPoints.length > 0) {
+                this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
+                this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
+            }
+            this.findingPath = false
         }
     }
 
     reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
         if (!nou(tile)) {
-            this.reservedTile = tile
+            this.reservedTile = tile!
             return tile
         }
         switch (this.type) {
@@ -588,12 +649,10 @@ export class AI {
             case AIType.EATING:
             case AIType.SLEEPING:
             case AIType.WORKING:
-
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
                     let tiles = this.gameState.getTilesForType(2147, "Road")
-                    //log(tiles)
                     if (tiles.length > 0) {
                         let i = 0
                         do {
@@ -612,14 +671,6 @@ export class AI {
         return this.reservedTile
     }
 
-    set startPoint(point: Phaser.Point) {
-        this._startPoint = point
-    }
-
-    get startPoint() {
-        return this._startPoint
-    }
-
     onPathComplete() {
         //log("PATH DONE")
         if (!nou(this.onPathCompleteHandler)) {
@@ -628,12 +679,13 @@ export class AI {
     }
 
     getCollider(): Function {
-        if (this.type === AIType.VEHICLE) {
-            return (x: number, y: number) => {
+        return (x: number, y: number) => {
+            if (this.type === AIType.VEHICLE) {
                 return !this.gameState.hasCollision(x, y, "Road")
+            } else {
+                return this.gameState.hasCollision(x, y) &&
+                    !this.gameState.hasCollision(x, y, "Doors")
             }
-        } else {
-            return this.gameState.hasCollision
         }
     }
 

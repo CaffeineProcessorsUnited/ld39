@@ -25,11 +25,7 @@ export class Pathfinder {
         this.npc = npc
         this.gs = gs
         this.staticTarget = staticTarget
-        if (staticTarget) {
-            this.interval = setInterval(this.onUpdate.bind(this), 250)
-        } else {
-            this.interval = setInterval(this.onUpdate.bind(this), 250)
-        }
+        this.forceUpdate()
     }
 
     static tile2pos(gameState: GameState, tile: Phaser.Point): Phaser.Point {
@@ -78,6 +74,18 @@ export class Pathfinder {
         return Pathfinder.pos2tile(this.gs, pos)
     }
 
+    forceUpdate() {
+        if (this.interval) {
+            window.clearTimeout(this.interval)
+            window.clearInterval(this.interval)
+        }
+        if (this.staticTarget) {
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
+        } else {
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
+        }
+    }
+
     private onUpdate() {
         if (!this.dirty) {
             console.log("GOT TO UPDATE, BUT NO CHANGES")
@@ -87,7 +95,7 @@ export class Pathfinder {
             console.log("SHOULD CALCULATE PATH. MISSING VALUES")
             return
         }
-        this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, this.npc.getCollider(), (plannedTile: Phaser.Point[]) => {
+        this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, this.npc.getCollider(), (plannedTile: Phaser.Point[], done: boolean) => {
 
             // plannedTile.forEach((p) => {
             //     this.gs.game.debug.rectangle(
@@ -104,7 +112,7 @@ export class Pathfinder {
                 this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
                 this.plannedPos.push(this.targetPos)
 
-                this.npc.newTargets(this.plannedPos.slice(1))
+                this.npc.newTargets(this.plannedPos.slice(1), done)
                 this.dirty = false
             }
         })

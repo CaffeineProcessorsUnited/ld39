@@ -52,7 +52,7 @@ export class AStar {
         let path = [current]
         let prev = current
         // console.log("#######", current, cameFrom)
-        while (cameFrom[prev.toString()] !== undefined) {
+        while (prev !== undefined && cameFrom[prev.toString()] !== undefined) {
             prev = cameFrom[prev.toString()]
             path.unshift(prev)
         }
@@ -91,26 +91,26 @@ export class AStar {
             current = curMinNode
             // console.log("mmmm", current)
             this.reconstructPath(this.cameFrom, this.to)
-            if (current.equals(this.to) || this.curIter > this.maxIter || this.curIter % 500 == 0) {
-                this.callback(this.reconstructPath(this.cameFrom, current))
-                if (current.equals(this.to) || this.curIter > this.maxIter) {
-                    return
-                }
+            if (current.equals(this.to) || this.curIter > this.maxIter) {
+                this.callback(this.reconstructPath(this.cameFrom, current), true)
+                return
+            } else if (this.curIter % 500 === 0) {
+                this.callback(this.reconstructPath(this.cameFrom, current), false)
             }
 
             let idx = this.currentNodes.indexOf(curMinNode)
             this.currentNodes.splice(idx, 1)
             this.completedNodes.push(current)
 
-            // this.currentNodes.forEach((n) => {
-            //     this.gamestate.game.debug.rectangle(
-            //         new Phaser.Rectangle(
-            //             64 * n.x,
-            //             64 * n.y,
-            //             20,
-            //             20),
-            //         "#00ff00")
-            // })
+            this.currentNodes.forEach((n) => {
+                this.gamestate.game.debug.rectangle(
+                    new Phaser.Rectangle(
+                        64 * n.x,
+                        64 * n.y,
+                        20,
+                        20),
+                    "#00ff00")
+            })
 
 
             for (const neighbor of this.getNeighbors(current)) {
@@ -146,7 +146,7 @@ export class AStar {
         if (next) {
             this.RAF()
         }
-        this.callback(this.reconstructPath(this.cameFrom, current))
+        this.callback(this.reconstructPath(this.cameFrom, current!))
     }
 
     private RAF() {
@@ -166,12 +166,12 @@ export class AStar {
         ]) {
             let collide = this.collider(from.x + delta[0], from.y + delta[1])
 //            this.gamestate.game.debug.rectangle(
-                // new Phaser.Rectangle(
-                //     64 * (from.x + delta[0]),
-                //     64 * (from.y + delta[1]),
-                //     20,
-                //     20),
-                // collide ? "#ff0000" : "#00ff00")
+            // new Phaser.Rectangle(
+            //     64 * (from.x + delta[0]),
+            //     64 * (from.y + delta[1]),
+            //     20,
+            //     20),
+            // collide ? "#ff0000" : "#00ff00")
             if (!collide) {
                 ret.push(new Phaser.Point(from.x + delta[0], from.y + delta[1]))
             }
