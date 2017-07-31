@@ -3,7 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator"
-import {between, choose, direction, random} from "../sgl/util"
+import {between, choose, direction, random, range} from "../sgl/util"
 
 export enum AIState {
     IDLE,
@@ -28,7 +28,13 @@ export enum AIType {
 }
 
 export class AI {
+    private static directionN: number[] = [-Math.PI * 3 / 4, -Math.PI * 1 / 4]
+    private static directionE: number[] = [-Math.PI * 1 / 4, Math.PI * 1 / 4]
+    private static directionS: number[] = [Math.PI * 1 / 4, Math.PI * 3 / 4]
+    private static directionW: number[] = [Math.PI * 3 / 4, -Math.PI * 3 / 4]
     sprite: Phaser.Sprite
+    batterySprite: Phaser.Sprite
+    chasingSprite: Phaser.Sprite
     simulator: Simulator
     maxSpeed: number
     reactionDelay: number
@@ -58,12 +64,8 @@ export class AI {
     private device: number
     private spawned: boolean = false
     private findingPath = false
-    private _speed: number
     private speedInTiles: number
-    private static directionN: number[] = [-Math.PI * 3 / 4, -Math.PI * 1 / 4]
-    private static directionE: number[] = [-Math.PI * 1 / 4, Math.PI * 1 / 4]
-    private static directionS: number[] = [Math.PI * 1 / 4, Math.PI * 3 / 4]
-    private static directionW: number[] = [Math.PI * 3 / 4, -Math.PI * 3 / 4]
+    private chasePlayer: boolean = false
 
     constructor(simulator: Simulator, type: AIType) {
         this.simulator = simulator
@@ -191,6 +193,7 @@ export class AI {
             default:
                 throw new Error("Unknown AIType. Fix your shit!")
         }
+        this.reactionDelay *= 2
         this.newSound()
         this.maxSpeed *= this.tileSize
         this.sprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, spriteKey))
@@ -199,7 +202,24 @@ export class AI {
         this.gameState.game.physics.enable(this.sprite)
         this.sprite.body.collideWorldBounds = true
 
+
+        this.batterySprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, "indicatorbattery"))
+        this.batterySprite.anchor.set(0.5)
+        this.chasingSprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, "indicatorchasing"))
+        this.chasingSprite.anchor.set(0.5)
+
         this.player = this.gameState.ref("player", "player")
+    }
+
+    private _speed: number
+
+    get speed() {
+        return this._speed
+    }
+
+    set speed(speed: number) {
+        this._speed = speed
+        this.speedInTiles = speed / this.tileSize
     }
 
     private _reservedTile?: Phaser.Point
@@ -215,15 +235,6 @@ export class AI {
             this.reservedX = pos.x
             this.reservedY = pos.y
         }
-    }
-
-    get speed() {
-        return this._speed
-    }
-
-    set speed(speed: number) {
-        this._speed = speed
-        this.speedInTiles = speed / this.tileSize
     }
 
     _spawnPoint: Phaser.Point
@@ -265,7 +276,36 @@ export class AI {
         return this.sprite.position
     }
 
+    updateIndicators() {
+
+        let baseX = this.sprite.x
+        if (this.canBeRobbed && this.state === AIState.CHASING && this.type !== AIType.VEHICLE) {
+            baseX -= 10
+        }
+
+        if (this.canBeRobbed) {
+            this.batterySprite.position.x = baseX
+            this.batterySprite.position.y = this.sprite.y - this.sprite.height / 2 - 10
+            this.batterySprite.visible = true
+        } else {
+            this.batterySprite.position.x = -100
+            this.batterySprite.visible = false
+        }
+        if (this.chasePlayer) {
+            this.chasingSprite.position.x = baseX
+            this.chasingSprite.position.y = this.sprite.y - this.sprite.height / 2 - 10
+            this.chasingSprite.visible = true
+        } else {
+            this.chasingSprite.position.x = -100
+            this.chasingSprite.visible = false
+        }
+
+
+    }
+
     update() {
+
+        this.updateIndicators()
         // console.log("UPDATE", this.type, this.state)
         // this.plannedPoints.forEach(value => {
         //     this.gameState.game.debug.rectangle(
@@ -300,11 +340,13 @@ export class AI {
         this.pathfinder.setCurrent(this.position)
         this.sound()
 
-        if (this.findingPath) {
-            return
-        }
+        // if (this.findingPath) {
+        //     console.log("FINDING PATH")
+        //     return
+        // }
 
-        if (this.state === AIState.CHASING) {
+        if (this.chasePlayer) {
+
             if (this.plannedPoints.length > this.maxWalkDistance) {
                 this.setStroll()
             }
@@ -313,6 +355,7 @@ export class AI {
                 log("CLUB")
                 this.giveUp.reset()
                 this.canBeRobbed = true
+                this.chasePlayer = false
                 if (this.type === AIType.VEHICLE) {
                     this.gameState.clubPlayer(40 + this.device)
                 } else {
@@ -325,6 +368,7 @@ export class AI {
             // Chance to give up chace
             if (this.giveUp.getRand()) {
                 this.setStroll()
+                this.chasePlayer = false
             }
             // Chance to sprint / slow down
             if (this.speedUp.getRand()) {
@@ -488,7 +532,7 @@ export class AI {
                     break
                 case 2:
                     this.sprite.animations.play("down")
-                    // log("down")
+                // log("down")
                 case 3:
                     this.sprite.animations.play("left")
                     // log("left")
@@ -534,18 +578,25 @@ export class AI {
     }
 
     pickPocket() {
-        if (!this.canBeRobbed && this.type !== AIType.GUARD) {
-            return
-        }
-        const rand = Math.random() * 100
-        if (rand < this.alert) {
-            let dx = this.position.x - this.gameState.currentTile.worldX
-            let dy = this.position.y - this.gameState.currentTile.worldY
-            if (dx * dx + dy * dy < this.alertRadSq * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
+        //console.log("HEY", this.canBeRobbed, this.type !== AIType.GUARD)
+        let dx = this.position.x - this.gameState.currentTile.worldX
+        let dy = this.position.y - this.gameState.currentTile.worldY
+
+        if (this.canBeRobbed) {
+            if (dx * dx + dy * dy < this.tileSize * this.tileSize) {
+                //console.log("GOT ME", dx, dy)
                 this.canBeRobbed = false
                 if (this.type !== AIType.GUARD) {
                     this.gameState.pickUp(this.device)
                 }
+            }
+        }
+
+        const rand = Math.random() * 100
+        if (rand < this.alert) {
+            if (dx * dx + dy * dy < this.alertRadSq * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
+                //console.log("CHASING YOU")
+
                 this.setChasing()
             }
         }
@@ -571,7 +622,7 @@ export class AI {
 
     setChasing() {
         this.speed = 0
-        this.state = AIState.CHASING
+        //this.state = AIState.CHASING
         this.doChase(this.reactionDelay)
     }
 
@@ -630,13 +681,15 @@ export class AI {
 
     clearTimeout() {
         if (this.timeout !== undefined) {
-            clearTimeout(this.timeout)
+            //console.log("CLEARED ASYNC ACTION")
+            //clearTimeout(this.timeout)
         }
     }
 
     async(func: Function, delta: number) {
         this.clearTimeout()
-        this.timeout = window.setTimeout(() => {
+        /*this.timeout = */
+        window.setTimeout(() => {
             this.timeout = undefined
             func()
         }, delta)
@@ -672,9 +725,9 @@ export class AI {
     }
 
     onPlayerMove(pos: Phaser.Point) {
-        if (this.state === AIState.CHASING) {
+        if (this.chasePlayer) {
+            //console.log("UPDATING PLAYER POSITION")
             this.setTarget(pos.x, pos.y)
-            this.pathfinder.setTarget(pos)
         }
     }
 
@@ -686,6 +739,7 @@ export class AI {
                 this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
                 this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
             }
+            //console.log("GOT ÜATH")
             this.findingPath = false
         }
     }
@@ -745,9 +799,14 @@ export class AI {
 
     private doChase(delay: number) {
         this.async(() => {
+            console.log("START CHASE")
+            this.forcePathUpdate()
             this.speed = this.maxSpeed
             this.giveUp.reset()
             this.speedUp.reset()
+
+            this.chasePlayer = true
+            this.forcePathUpdate()
         }, delay * 1000)
     }
 
@@ -755,10 +814,17 @@ export class AI {
         this.async(() => {
             this.state = AIState.STROLL
             this.speed = (0.5 + 0.1 * Math.random()) * this.maxSpeed
-            while (!this.setTarget(
-                this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
-                this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
-                console.log("Cannot find suitable location for stroll")
+            let ok = false
+            for (let i of range(0, 100)) {
+                if (this.setTarget(
+                        this.position.x + Math.round(Math.random() * 10 - 5) * this.tileSize / 2,
+                        this.position.y + Math.round(Math.random() * 10 - 5) * this.tileSize / 2)) {
+                    ok = true
+                    break
+                }
+            }
+            if (!ok) {
+                console.log("CANNOT FIND SUITABLE LOCATION FOR STROLL")
             }
         }, delay * 1000)
     }
