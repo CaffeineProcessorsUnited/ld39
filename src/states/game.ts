@@ -85,7 +85,8 @@ export class GameState extends State {
         this.simulator = new Simulator(this)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         // this.simulator.spawn(AIType.GUARD, AIState.IDLE)
-        this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(10, 10))
+        let t = this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(0, 0))
+
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
@@ -95,6 +96,8 @@ export class GameState extends State {
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+
+
 
         setTimeout(() => {
             //this.npc[0].sitDown(125, 125)
@@ -323,7 +326,7 @@ export class GameState extends State {
         this.map.setCollision([2045], true, "Collision", false)
         this.map.setCollisionBetween(2046, 2056/* TODO: Own Tilesheet */, true, "Tables", false)
 
-        this.layerManager.layer("player").addRef("player", this.game.add.sprite(32, 5 * this.map.tileHeight + 32, "player"))
+        this.layerManager.layer("player").addRef("player", this.game.add.sprite(50 * this.map.tileWidth + 32, 5 * this.map.tileHeight + 32, "player"))
         this.ref("player", "player").anchor.set(0.5)
         this.game.physics.enable(this.ref("player", "player"))
         this.ref("player", "player").body.collideWorldBounds = true

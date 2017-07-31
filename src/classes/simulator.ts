@@ -47,20 +47,20 @@ export class Simulator {
             path.spawn = object.spawnPoint
         }
         log(path)
+        object.spawnPoint = path.spawn
         switch (state) {
             case AIState.DRIVING:
                 object.reservedTile = undefined
-                object.setTilePosition(path.spawn)
+                object.startPoint = path.spawn
                 object.newTargets(path.targets)
                 object.onPathCompleteHandler = () => {
                     this.respawn(object)
                 }
                 break
             default:
-                object.setTilePosition(path.spawn)
+                object.startPoint = path.spawn
                 break
         }
-        object.spawnPoint = path.spawn
         object.newSound()
         return object
     }
