@@ -98,7 +98,6 @@ export class GameState extends State {
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
 
 
-
         setTimeout(() => {
             //this.npc[0].sitDown(125, 125)
         }, 5000)
@@ -658,11 +657,11 @@ export class GameState extends State {
         // TODO: Set correct ID
         switch (level) {
             case LEVEL.PARKINGLOT:
-                return this.getTilesForType(9996, "Level")
+                return this.getTilesForType(2148, "Level")
             case LEVEL.MENSA:
                 return this.getTilesForType(2149, "Level")
             case LEVEL.LIBRARY:
-                return this.getTilesForType(9998, "Level")
+                return this.getTilesForType(2150, "Level")
             case LEVEL.PCPOOL:
                 return this.getTilesForType(9999, "Level")
             default:
@@ -675,24 +674,22 @@ export class GameState extends State {
         let type = choose(types)
         let pos = Pathfinder.tile2pos(this, tile)
 
-        let npc
         if (type === AIType.STANDING) {
-            npc = this.simulator.spawn(type, state, tile.clone(), tile.clone())
+            this.simulator.spawn(type, state, tile.clone(), tile.clone())
         } else {
-            npc = this.simulator.spawn(type, state, undefined, tile.clone())
+            let npc = this.simulator.spawn(type, state, undefined, tile.clone())
             if (state === AIState.SITTING) {
                 npc.sitDown(Math.floor(pos.x), Math.floor(pos.y))
             }
         }
-
     }
 
     spreadPlayers(level: number) {
         let points = this.getTilesForLevel(level)
         if (points.length > 0) {
             const type = [
-                // AIType.GUARD,
-                // AIType.PROF,
+                AIType.GUARD,
+                AIType.PROF,
                 AIType.EATING,
             ]
 

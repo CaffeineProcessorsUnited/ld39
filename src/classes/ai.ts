@@ -246,16 +246,16 @@ export class AI {
     }
 
     update() {
-        log("UPDATE", this.type, this.state)
-        // this.plannedPoints.forEach(value => {
-        //     this.gameState.game.debug.rectangle(
-        //         new Phaser.Rectangle(
-        //             value.x,
-        //             value.y,
-        //             20,
-        //             20),
-        //         "#00ffff")
-        // })
+        console.log("UPDATE", this.type, this.state)
+        this.plannedPoints.forEach(value => {
+            this.gameState.game.debug.rectangle(
+                new Phaser.Rectangle(
+                    value.x,
+                    value.y,
+                    20,
+                    20),
+                "#00ffff")
+        })
         if (!this.spawned) {
             let pos = this.pathfinder.tile2pos(this.startPoint).clone()
             this.sprite.x = pos.x
@@ -560,7 +560,7 @@ export class AI {
             log(`Replace tile id ${this.getTileId()} with ${this.replacedTile} at ${tile.x}, ${tile.y}`)
             this.gameState.map.replace(this.getTileId(), this.replacedTile, tile.x, tile.y, 1, 1, "Tables")
         } else {
-            this.state = AIState.DRIVING
+            this.state = AIState.PARKING
         }
         this.speed = this.maxSpeed
         let pos = this.pathfinder.tile2pos(this.spawnPoint)
@@ -587,6 +587,10 @@ export class AI {
             return false
         }
         const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
+        if (this.position.x > 80 * 64) {
+            console.trace("SPAWNING PLAYER", tile, this)
+        }
+
         if (this.getCollider()(tile.x, tile.y)) {
             return false
         }
@@ -633,7 +637,6 @@ export class AI {
             case AIType.EATING:
             case AIType.SLEEPING:
             case AIType.WORKING:
-
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
@@ -665,12 +668,13 @@ export class AI {
     }
 
     getCollider(): Function {
-        if (this.type === AIType.VEHICLE) {
-            return (x: number, y: number) => {
+        return (x: number, y: number) => {
+            if (this.type === AIType.VEHICLE) {
                 return !this.gameState.hasCollision(x, y, "Road")
+            } else {
+                return this.gameState.hasCollision(x, y) &&
+                    !this.gameState.hasCollision(x, y, "Doors")
             }
-        } else {
-            return this.gameState.hasCollision
         }
     }
 

@@ -25,11 +25,7 @@ export class Pathfinder {
         this.npc = npc
         this.gs = gs
         this.staticTarget = staticTarget
-        if (staticTarget) {
-            this.interval = setInterval(this.onUpdate.bind(this), 250)
-        } else {
-            this.interval = setInterval(this.onUpdate.bind(this), 250)
-        }
+        this.forceUpdate()
     }
 
     static tile2pos(gameState: GameState, tile: Phaser.Point): Phaser.Point {
@@ -110,6 +106,18 @@ export class Pathfinder {
         })
         if (this.staticTarget) {
             window.clearInterval(this.interval)
+        }
+    }
+
+    private forceUpdate() {
+        if (this.interval) {
+            window.clearTimeout(this.interval)
+            window.clearInterval(this.interval)
+        }
+        if (this.staticTarget) {
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
+        } else {
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
         }
     }
 

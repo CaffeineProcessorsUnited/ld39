@@ -52,7 +52,7 @@ export class AStar {
         let path = [current]
         let prev = current
         // console.log("#######", current, cameFrom)
-        while (cameFrom[prev.toString()] !== undefined) {
+        while (prev !== undefined && cameFrom[prev.toString()] !== undefined) {
             prev = cameFrom[prev.toString()]
             path.unshift(prev)
         }
@@ -102,15 +102,15 @@ export class AStar {
             this.currentNodes.splice(idx, 1)
             this.completedNodes.push(current)
 
-            // this.currentNodes.forEach((n) => {
-            //     this.gamestate.game.debug.rectangle(
-            //         new Phaser.Rectangle(
-            //             64 * n.x,
-            //             64 * n.y,
-            //             20,
-            //             20),
-            //         "#00ff00")
-            // })
+            this.currentNodes.forEach((n) => {
+                this.gamestate.game.debug.rectangle(
+                    new Phaser.Rectangle(
+                        64 * n.x,
+                        64 * n.y,
+                        20,
+                        20),
+                    "#00ff00")
+            })
 
 
             for (const neighbor of this.getNeighbors(current)) {
@@ -146,7 +146,7 @@ export class AStar {
         if (next) {
             this.RAF()
         }
-        this.callback(this.reconstructPath(this.cameFrom, current))
+        this.callback(this.reconstructPath(this.cameFrom, current!))
     }
 
     private RAF() {
