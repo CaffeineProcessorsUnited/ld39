@@ -623,17 +623,16 @@ export class AI {
         }
     }
 
-    newTargets(pos: Phaser.Point[]) {
+    newTargets(pos: Phaser.Point[], done: boolean) {
         this.plannedPoints = pos
         this.currentPoint = 0
         if (this.plannedPoints.length > 0) {
             this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
             this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
         }
-    }
-
-    pathFound() {
-        this.findingPath = false
+        if (done) {
+            this.findingPath = false
+        }
     }
 
     reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
