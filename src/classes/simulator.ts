@@ -24,6 +24,7 @@ export class Simulator {
     respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point): AI {
         let type = object.type
         let state = object.state
+        console.log("vvvv", type, state)
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:

@@ -2,7 +2,7 @@ import {error, log, nou} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
-import {Simulator} from "./simulator";
+import {Simulator} from "./simulator"
 
 export enum AIState {
     IDLE,
@@ -124,7 +124,7 @@ export class AI {
                 this.armLength = 30
                 this.maxWalkDistance = 8
                 this.giveUp = new IncRand(0.04, 6, 10)
-                this.goHome = new IncRand(0.01, 100, 300)
+                this.goHome = new IncRand(0.01, 5, 10)
                 spriteKey = "eating"
                 break
             case AIType.LEARNING:
@@ -184,11 +184,15 @@ export class AI {
     }
 
     update() {
+        if(this.type === AIType.EATING){
+            //debugger
+        }
         this.gameState.game.physics.arcade.collide(this.sprite)
         this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         this.pathfinder.setCurrent(this.position)
 
         if (this.state === AIState.SITTING && this.goHome.getRand()) {
+            console.error("STANDUP");
             this.standUp()
         }
 
@@ -238,7 +242,11 @@ export class AI {
             this.clearTimeout()
             this.speed = 0
         } else {
-            if (this.sprite.position.x !== this.targetX && this.sprite.position.y !== this.targetY) {
+            if (!nou(this.targetX) &&
+                !nou(this.targetY) &&
+                this.sprite.position.x !== this.targetX &&
+                this.sprite.position.y !== this.targetY)
+            {
                 this.clearTimeout()
                 if (!nou(this.reservedTile)) {
                     let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
@@ -431,18 +439,19 @@ export class AI {
         return 943 // TODO: Calculate with custom Tilesheet
     }
 
-    sitDown(x: number, y: number) {
+    sitDown(x: number, y: number): boolean {
         let tile = this.gameState.getTileAt(x, y, "Tables")
         if (nou(tile)) {
             error(`Can't sit down at ${x}, ${y} because it has no tile to replace`)
-            return
+            return false
         }
-        this.position.x = tile.worldX + tile.centerX
-        this.position.y = tile.worldY + tile.centerY
+        this.sprite.position.x = tile.worldX + tile.centerX
+        this.sprite.position.y = tile.worldY + tile.centerY
         this.state = AIState.SITTING
         this.replacedTile = tile.index
         log(`Replace tile id ${tile.index} with ${this.getTileId()} at ${tile.x}, ${tile.y}`)
         this.gameState.map.replace(tile.index, this.getTileId(), tile.x, tile.y, 1, 1, "Tables")
+        return true
     }
 
     standUp() {
