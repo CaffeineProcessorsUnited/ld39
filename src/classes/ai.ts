@@ -267,15 +267,15 @@ export class AI {
 
     update() {
         // console.log("UPDATE", this.type, this.state)
-        this.plannedPoints.forEach(value => {
-            this.gameState.game.debug.rectangle(
-                new Phaser.Rectangle(
-                    value.x,
-                    value.y,
-                    20,
-                    20),
-                "#00ffff")
-        })
+        // this.plannedPoints.forEach(value => {
+        //     this.gameState.game.debug.rectangle(
+        //         new Phaser.Rectangle(
+        //             value.x,
+        //             value.y,
+        //             20,
+        //             20),
+        //         "#00ffff")
+        // })
         // if (!this.spawned && false) {
         //     let pos = this.pathfinder.tile2pos(this.startPoint).clone()
         //     log("SPAWNED", pos)

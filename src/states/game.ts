@@ -14,7 +14,7 @@ enum LEVEL {
 
 export class GameState extends State {
 
-    energyLossPerSecond: number = 5
+    energyLossPerSecond: number = 0.1
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
     zoom: number = 1
     map: Phaser.Tilemap
@@ -213,18 +213,16 @@ export class GameState extends State {
 
         this.simulator.update()
 
-        this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 115)
-
-
-        this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", layers:", 30, 135)
-        let line = 155
-        this.map.layers.forEach((_, lid) => {
-            let tile = this.map.getTile(this.lastTile.x, this.lastTile.y, lid)
-            if (tile != null) {
-                this.game.debug.text("    id: " + tile.index + ", layer: " + tile.layer.name, 30, line)
-                line += 20
-            }
-        })
+        // this.game.debug.text("Energy remaining: " + this.energyReserve, 30, 115)
+        // this.game.debug.text("CurrentTile: x:" + this.lastTile.x + ", y:" + this.lastTile.y + ", layers:", 30, 135)
+        // let line = 155
+        // this.map.layers.forEach((_, lid) => {
+        //     let tile = this.map.getTile(this.lastTile.x, this.lastTile.y, lid)
+        //     if (tile != null) {
+        //         this.game.debug.text("    id: " + tile.index + ", layer: " + tile.layer.name, 30, line)
+        //         line += 20
+        //     }
+        // })
 
 
         let batled = window.document.getElementById("led2")!
