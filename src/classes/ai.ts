@@ -267,15 +267,15 @@ export class AI {
 
     update() {
         // console.log("UPDATE", this.type, this.state)
-        this.plannedPoints.forEach(value => {
-            this.gameState.game.debug.rectangle(
-                new Phaser.Rectangle(
-                    value.x,
-                    value.y,
-                    20,
-                    20),
-                "#00ffff")
-        })
+        // this.plannedPoints.forEach(value => {
+        //     this.gameState.game.debug.rectangle(
+        //         new Phaser.Rectangle(
+        //             value.x,
+        //             value.y,
+        //             20,
+        //             20),
+        //         "#00ffff")
+        // })
         // if (!this.spawned && false) {
         //     let pos = this.pathfinder.tile2pos(this.startPoint).clone()
         //     log("SPAWNED", pos)
@@ -474,22 +474,22 @@ export class AI {
                 return
             }
 
-            log(direction(this.sprite.body.angle))
+            // log(direction(this.sprite.body.angle))
             switch (direction(this.sprite.body.angle)) {
                 case 0:
                     this.sprite.animations.play("up")
-                    log("up")
+                    // log("up")
                     break
                 case 1:
                     this.sprite.animations.play("right")
-                    log("right")
+                    //log("right")
                     break
                 case 2:
                     this.sprite.animations.play("down")
-                    log("down")
+                    // log("down")
                 case 3:
                     this.sprite.animations.play("left")
-                    log("left")
+                    // log("left")
                     break
                 default:
                     break
