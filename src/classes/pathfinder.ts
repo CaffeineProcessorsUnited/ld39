@@ -26,7 +26,7 @@ export class Pathfinder {
         this.gs = gs
         this.staticTarget = staticTarget
         if (staticTarget) {
-            this.interval = setTimeout(this.onUpdate.bind(this), 250)
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
         } else {
             this.interval = setInterval(this.onUpdate.bind(this), 250)
         }
@@ -80,25 +80,24 @@ export class Pathfinder {
 
     private onUpdate() {
         if (!this.dirty) {
-            // console.log("GOT TO UPDATE, BUT NO CHANGES")
+            console.log("GOT TO UPDATE, BUT NO CHANGES")
             return
         }
         if (!this.curPos || !this.targetPos) {
-            // console.log("SHOULD CALCULATE PATH. MISSING VALUES")
+            console.log("SHOULD CALCULATE PATH. MISSING VALUES")
             return
         }
+        this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, this.npc.getCollider(), (plannedTile: Phaser.Point[]) => {
 
-        this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, (plannedTile: Phaser.Point[]) => {
-
-            plannedTile.forEach((p) => {
-                this.gs.game.debug.rectangle(
-                    new Phaser.Rectangle(
-                        p.x * this.gs.map.width,
-                        p.y * this.gs.map.height,
-                        20,
-                        20),
-                    "#ff0000")
-            })
+            // plannedTile.forEach((p) => {
+            //     this.gs.game.debug.rectangle(
+            //         new Phaser.Rectangle(
+            //             p.x * this.gs.map.width,
+            //             p.y * this.gs.map.height,
+            //             20,
+            //             20),
+            //         "#ff0000")
+            // })
 
             if (nou(this.plannedTile) || !Pathfinder.pathEquals(this.plannedTile, plannedTile)) {
                 this.plannedTile = plannedTile
@@ -109,6 +108,9 @@ export class Pathfinder {
                 this.dirty = false
             }
         })
+        if (this.staticTarget) {
+            window.clearInterval(this.interval)
+        }
     }
 
 }

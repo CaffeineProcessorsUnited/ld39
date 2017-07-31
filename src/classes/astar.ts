@@ -8,6 +8,7 @@ export class AStar {
     private maxIter: number
     private curIter: number
     private callback: Function
+    private collider: Function
 
 
     private completedNodes: Phaser.Point[] = []
@@ -18,12 +19,13 @@ export class AStar {
     private fScore: { [index: string]: number } = {}// Not in dict = inf
 
 
-    constructor(gamestate: GameState, from: Phaser.Point, to: Phaser.Point, maxIter: number, callback: Function) {
+    constructor(gamestate: GameState, from: Phaser.Point, to: Phaser.Point, maxIter: number, collider: Function, callback: Function) {
         this.gamestate = gamestate
         this.from = from
         this.to = to
         this.maxIter = maxIter
         this.curIter = 0
+        this.collider = collider
         this.callback = callback
 
         this.currentNodes.push(from)
@@ -69,6 +71,7 @@ export class AStar {
 
     private calcPathStep() {
         let next = true
+        let current
         for (let _ of range(0, 20)) {
             if (this.currentNodes.length === 0) {
                 next = false
@@ -85,12 +88,12 @@ export class AStar {
                 }
             })
 
-            let current = curMinNode
+            current = curMinNode
             // console.log("mmmm", current)
             this.reconstructPath(this.cameFrom, this.to)
             if (current.equals(this.to) || this.curIter > this.maxIter || this.curIter % 500 == 0) {
                 this.callback(this.reconstructPath(this.cameFrom, current))
-                if(current.equals(this.to) || this.curIter > this.maxIter){
+                if (current.equals(this.to) || this.curIter > this.maxIter) {
                     return
                 }
             }
@@ -143,7 +146,7 @@ export class AStar {
         if (next) {
             this.RAF()
         }
-        this.callback(this.reconstructPath(this.cameFrom, this.to))
+        this.callback(this.reconstructPath(this.cameFrom, current))
     }
 
     private RAF() {
@@ -161,7 +164,15 @@ export class AStar {
             [0, -1],
             [0, 1],
         ]) {
-            if (!this.gamestate.hasCollision(from.x + delta[0], from.y + delta[1])) {
+            let collide = this.collider(from.x + delta[0], from.y + delta[1])
+//            this.gamestate.game.debug.rectangle(
+                // new Phaser.Rectangle(
+                //     64 * (from.x + delta[0]),
+                //     64 * (from.y + delta[1]),
+                //     20,
+                //     20),
+                // collide ? "#ff0000" : "#00ff00")
+            if (!collide) {
                 ret.push(new Phaser.Point(from.x + delta[0], from.y + delta[1]))
             }
         }

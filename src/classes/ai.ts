@@ -48,7 +48,6 @@ export class AI {
     private speedUp: IncRand
     private timeout?: number
     private pathfinder: Pathfinder
-    private plannedPoints: Phaser.Point[]
     private currentPoint: number
     private targetX: number
     private targetY: number
@@ -194,16 +193,37 @@ export class AI {
         this.player = this.gameState.ref("player", "player")
     }
 
+    private _plannedPoints: Phaser.Point[]
+
+    get plannedPoints(): Phaser.Point[] {
+        return this._plannedPoints
+    }
+
+    set plannedPoints(pos: Phaser.Point[]) {
+        // console.trace(pos, this._plannedPoints)
+        this._plannedPoints = pos
+    }
+
     get position(): Phaser.Point {
         return this.sprite.position
     }
 
     update() {
-        if (this.type === AIType.EATING) {
-            //debugger
+        // this.plannedPoints.forEach(value => {
+        //     this.gameState.game.debug.rectangle(
+        //         new Phaser.Rectangle(
+        //             value.x,
+        //             value.y,
+        //             20,
+        //             20),
+        //         "#00ffff")
+        // })
+        if (this.type === AIType.VEHICLE) {
+            //this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["road"])
+        } else {
+            this.gameState.game.physics.arcade.collide(this.sprite)
+            this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         }
-        this.gameState.game.physics.arcade.collide(this.sprite)
-        this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         this.pathfinder.setCurrent(this.position)
 
         if (this.state === AIState.SITTING && this.goHome.getRand()) {
@@ -257,11 +277,7 @@ export class AI {
             this.clearTimeout()
             this.speed = 0
         } else {
-            if (!nou(this.reservedTile)) {
-                let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
-                this.speed = this.maxSpeed
-                this.setTarget(newTarget.x, newTarget.y)
-            } else if (!nou(this.targetX) &&
+            if (!nou(this.targetX) &&
                 !nou(this.targetY) &&
                 this.sprite.position.x !== this.targetX &&
                 this.sprite.position.y !== this.targetY) {
@@ -271,6 +287,10 @@ export class AI {
                 } else {
                     this.setStroll()
                 }
+            } else if (!nou(this.reservedTile)) {
+                let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
+                this.speed = this.maxSpeed
+                this.setTarget(newTarget.x, newTarget.y)
             } else {
                 this.speed = 0
                 switch (this.type) {
@@ -506,19 +526,18 @@ export class AI {
             return false
         }
         const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
-        if (this.gameState.hasCollision(tile.x, tile.y)) {
+        if (this.getCollider()(tile.x, tile.y)) {
             return false
         }
         const dx = this.position.x - x
         const dy = this.position.y - y
         const dist = Math.sqrt(dx * dx + dy * dy)
-        // console.log("++++", dx, dy, norm, this.tileSize)
 
-        this.targetX = x
-        this.targetY = y
         if (dist < this.tileSize) {
             this.plannedPoints = [new Phaser.Point(x, y)]
             this.currentPoint = 0
+            this.targetX = x
+            this.targetY = y
         } else {
             this.pathfinder.setTarget(new Phaser.Point(x, y))
         }
@@ -535,6 +554,10 @@ export class AI {
     newTargets(pos: Phaser.Point[]) {
         this.plannedPoints = pos
         this.currentPoint = 0
+        if (this.plannedPoints.length > 0) {
+            this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
+            this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
+        }
     }
 
     reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
@@ -579,6 +602,16 @@ export class AI {
         //log("PATH DONE")
         if (!nou(this.onPathCompleteHandler)) {
             this.onPathCompleteHandler()
+        }
+    }
+
+    getCollider(): Function {
+        if (this.type === AIType.VEHICLE) {
+            return (x: number, y: number) => {
+                return !this.gameState.hasCollision(x, y, "Road")
+            }
+        } else {
+            return this.gameState.hasCollision
         }
     }
 

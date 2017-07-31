@@ -87,6 +87,11 @@ export class GameState extends State {
         // this.simulator.spawn(AIType.GUARD, AIState.IDLE)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(10, 10))
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
@@ -254,11 +259,11 @@ export class GameState extends State {
                 "renderable": false,
             },
             {
-                "name": "Road",
+                "name": "Level",
                 "renderable": false,
             },
             {
-                "name": "Level",
+                "name": "Road",
                 "renderable": false,
             },
             {
@@ -453,18 +458,18 @@ export class GameState extends State {
         }
     }
 
-    hasCollision(x: number, y: number) {
+    hasCollision(x: number, y: number, layer: string = "Collision") {
         if (x < 0 || y < 0 || x > this.map.width || y > this.map.height) {
             return true
         }
-        const coll = this.map.getTile(x, y, "Collision") !== null
+        const coll = this.map.getTile(x, y, layer) !== null
         // this.game.debug.rectangle(
         //     new Phaser.Rectangle(
         //         x*this.map.tileWidth,
         //         y*this.map.tileHeight,
         //         20,
         //         20),
-        //     coll ? "#ff0000" : "#00ff00")
+        //     coll ? "#ff00ff" : "#ffff00")
         return coll
     }
 
