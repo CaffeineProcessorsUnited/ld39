@@ -121,6 +121,8 @@ export class GameState extends State {
             rate = 900
         }
 
+        this.ref("player", "player").rotation = this.ref("player", "player").body.angle
+
         if (this.ref("player", "player").body.velocity.x >= max) {
             this.ref("player", "player").body.velocity.x = max
         }

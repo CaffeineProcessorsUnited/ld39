@@ -445,6 +445,7 @@ export class AI {
                 this.sprite.body.velocity.y = dy / dist * this.speed
             }
         }
+        this.sprite.rotation = this.sprite.body.angle
 
     }
 
