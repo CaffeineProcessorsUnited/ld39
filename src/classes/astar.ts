@@ -71,7 +71,7 @@ export class AStar {
 
     private calcPathStep() {
         let next = true
-        let current
+        let current: Phaser.Point
         for (let _ of range(0, 20)) {
             if (this.currentNodes.length === 0) {
                 next = false
@@ -89,7 +89,6 @@ export class AStar {
             })
 
             current = curMinNode
-            // console.log("mmmm", current)
             if (current.equals(this.to) || this.curIter > this.maxIter) {
                 this.callback(this.reconstructPath(this.cameFrom, current), true)
                 return
@@ -101,15 +100,15 @@ export class AStar {
             this.currentNodes.splice(idx, 1)
             this.completedNodes.push(current)
 
-            this.currentNodes.forEach((n) => {
-                this.gamestate.game.debug.rectangle(
-                    new Phaser.Rectangle(
-                        64 * n.x,
-                        64 * n.y,
-                        20,
-                        20),
-                    "#00ff00")
-            })
+            // this.currentNodes.forEach((n) => {
+            //     this.gamestate.game.debug.rectangle(
+            //         new Phaser.Rectangle(
+            //             64 * n.x,
+            //             64 * n.y,
+            //             20,
+            //             20),
+            //         "#00ff00")
+            // })
 
 
             for (const neighbor of this.getNeighbors(current)) {
