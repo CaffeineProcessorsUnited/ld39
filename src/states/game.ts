@@ -84,7 +84,7 @@ export class GameState extends State {
 
         this.simulator = new Simulator(this)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
-        // this.simulator.spawn(AIType.GUARD, AIState.IDLE)
+        this.simulator.spawn(AIType.GUARD, AIState.IDLE)
         //let t = this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(0, 0))
 
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
@@ -312,6 +312,7 @@ export class GameState extends State {
         })
 
         const managedLayers = [
+            "npc",
             "player",
             "lights",
             "dialog",
@@ -696,17 +697,17 @@ export class GameState extends State {
             ]
 
             // Spawn generic people
-            // range(0, 10).forEach((id) => {
-            //     window.setTimeout(() => {
-            //         this.spawnPlayer(points, [AIType.STANDING], AIState.IDLE)
-            //     }, id * 10000)
-            // })
+            range(0, 10).forEach((id) => {
+                window.setTimeout(() => {
+                    this.spawnPlayer(points, [AIType.STANDING], AIState.IDLE)
+                }, id * 1000)
+            })
 
-            range(0, 20).forEach((id) => {
+            /*range(0, 20).forEach((id) => {
                 window.setTimeout(() => {
                     this.spawnPlayer(points, type, AIState.IDLE)
                 }, id * 5000)
-            })
+            })*/
 
 
             if (level === LEVEL.PARKINGLOT) {

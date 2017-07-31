@@ -188,7 +188,7 @@ export class AI {
         }
         this.newSound()
         this.maxSpeed *= this.tileSize
-        this.sprite = this.gameState.game.add.sprite(200, 200, spriteKey)
+        this.sprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, spriteKey))
         this.sprite.anchor.set(0.5)
         this.gameState.game.physics.enable(this.sprite)
         this.sprite.body.collideWorldBounds = true
@@ -229,6 +229,9 @@ export class AI {
 
     set startPoint(point: Phaser.Point) {
         this._startPoint = point
+        let pos = this.pathfinder.tile2pos(this.startPoint).clone()
+        this.sprite.x = pos.x
+        this.sprite.y = pos.y
     }
 
     private _plannedPoints: Phaser.Point[]
@@ -257,12 +260,13 @@ export class AI {
                     20),
                 "#00ffff")
         })
-        if (!this.spawned) {
-            let pos = this.pathfinder.tile2pos(this.startPoint).clone()
-            this.sprite.x = pos.x
-            this.sprite.y = pos.y
-            this.spawned = true
-        }
+        // if (!this.spawned && false) {
+        //     let pos = this.pathfinder.tile2pos(this.startPoint).clone()
+        //     log("SPAWNED", pos)
+        //     this.sprite.x = pos.x
+        //     this.sprite.y = pos.y
+        //     this.spawned = true
+        // }
 
         if (this.state === AIState.SITTING) {
             if (this.goHome.getRand()) {
@@ -280,7 +284,6 @@ export class AI {
         this.pathfinder.setCurrent(this.position)
         this.sound()
 
-        this.sound()
         if (this.findingPath) {
             return
         }
@@ -448,7 +451,6 @@ export class AI {
     sound() {
         if (!nou(this.spriteSound)) {
             if (this.type === AIType.VEHICLE) {
-                log(this.speed)
                 if (this.speed > 0) {
                     if (!this.spriteSound.isPlaying) {
                         this.spriteSound.loop = true
