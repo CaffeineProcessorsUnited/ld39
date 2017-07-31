@@ -474,22 +474,22 @@ export class AI {
                 return
             }
 
-            log(direction(this.sprite.body.angle))
+            // log(direction(this.sprite.body.angle))
             switch (direction(this.sprite.body.angle)) {
                 case 0:
                     this.sprite.animations.play("up")
-                    log("up")
+                    // log("up")
                     break
                 case 1:
                     this.sprite.animations.play("right")
-                    log("right")
+                    //log("right")
                     break
                 case 2:
                     this.sprite.animations.play("down")
-                    log("down")
+                    // log("down")
                 case 3:
                     this.sprite.animations.play("left")
-                    log("left")
+                    // log("left")
                     break
             }
 

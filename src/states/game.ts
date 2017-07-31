@@ -533,6 +533,7 @@ export class GameState extends State {
     }
 
     unlockLevel(idx: number) {
+        console.log("VVVVVVV", idx, this.unlockedLevel)
         if (!this.unlockedLevel[idx]) {
             this.spreadPlayers(idx)
         }
@@ -559,6 +560,7 @@ export class GameState extends State {
                 break
             case "tutorial1-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Papers on the floor can be very usefull ;)")
+                this.unlockLevel(LEVEL.PARKINGLOT)
                 break
             case "message-under-construction-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Under construction")
@@ -729,13 +731,13 @@ export class GameState extends State {
         // TODO: Set correct ID
         switch (level) {
             case LEVEL.PARKINGLOT:
-                return this.getTilesForType(2148, "Level")
+                return this.getTilesForType(2158, "Level")
             case LEVEL.MENSA:
-                return this.getTilesForType(2149, "Level")
+                return this.getTilesForType(2159, "Level")
             case LEVEL.LIBRARY:
-                return this.getTilesForType(2150, "Level")
+                return this.getTilesForType(2160, "Level")
             case LEVEL.PCPOOL:
-                return this.getTilesForType(9999, "Level")
+                return this.getTilesForType(2161, "Level")
             default:
                 return []
         }
@@ -778,9 +780,9 @@ export class GameState extends State {
                 }, id * 5000)
             })
 
+            console.trace(level)
 
             if (level === LEVEL.PARKINGLOT) {
-
             } else if (level === LEVEL.MENSA ||
                 level === LEVEL.LIBRARY ||
                 level === LEVEL.PCPOOL) {
