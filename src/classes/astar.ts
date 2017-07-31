@@ -93,6 +93,7 @@ export class AStar {
             this.reconstructPath(this.cameFrom, this.to)
             if (current.equals(this.to) || this.curIter > this.maxIter) {
                 this.callback(this.reconstructPath(this.cameFrom, current), true)
+                return
             } else if (this.curIter % 500 === 0) {
                 this.callback(this.reconstructPath(this.cameFrom, current), false)
             }

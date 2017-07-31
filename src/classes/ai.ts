@@ -247,7 +247,7 @@ export class AI {
     }
 
     update() {
-        console.log("UPDATE", this.type, this.state)
+        // console.log("UPDATE", this.type, this.state)
         this.plannedPoints.forEach(value => {
             this.gameState.game.debug.rectangle(
                 new Phaser.Rectangle(
@@ -278,6 +278,7 @@ export class AI {
             this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         }
         this.pathfinder.setCurrent(this.position)
+        this.sound()
 
         this.sound()
         if (this.findingPath) {
@@ -330,12 +331,11 @@ export class AI {
             this.clearTimeout()
             this.speed = 0
         } else {
-            log("ELSE")
             if (!nou(this.targetX) &&
                 !nou(this.targetY) &&
                 this.sprite.x !== this.targetX &&
                 this.sprite.y !== this.targetY) {
-                log("GOT TARGET", this.plannedPoints)
+                // log("GOT TARGET", this.plannedPoints)
                 this.clearTimeout()
                 this.speed = 0
                 if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
@@ -345,7 +345,7 @@ export class AI {
                 }
             } else if (!nou(this.reservedTile) && this.sprite.x !== this.reservedX &&
                 this.sprite.y !== this.reservedY) {
-                log("GOT RESERVED")
+                // log("GOT RESERVED")
                 let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
                 this.speed = this.maxSpeed
                 this.setTarget(newTarget.x, newTarget.y)
@@ -362,7 +362,7 @@ export class AI {
                         break
                     case AIType.VEHICLE:
                         if (this.state === AIState.PARKING) {
-                            //this.sitDown(this.position.x, this.position.y)
+                            // this.sitDown(this.position.x, this.position.y)
                         }
                         break
                     default:
@@ -590,7 +590,7 @@ export class AI {
 
     setTarget(x: number, y: number): boolean {
         if (this.findingPath) {
-            return
+            return false
         }
         if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
             return false
@@ -613,7 +613,6 @@ export class AI {
             this.targetX = x
             this.targetY = y
         } else {
-            log("FIND PATH")
             this.pathfinder.setTarget(new Phaser.Point(x, y))
             this.pathfinder.forceUpdate()
             this.findingPath = true
@@ -631,11 +630,11 @@ export class AI {
     newTargets(pos: Phaser.Point[], done: boolean) {
         this.plannedPoints = pos
         this.currentPoint = 0
-        if (this.plannedPoints.length > 0) {
-            this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
-            this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
-        }
         if (done) {
+            if (this.plannedPoints.length > 0) {
+                this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
+                this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
+            }
             this.findingPath = false
         }
     }
@@ -654,7 +653,6 @@ export class AI {
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
                     let tiles = this.gameState.getTilesForType(2147, "Road")
-                    //log(tiles)
                     if (tiles.length > 0) {
                         let i = 0
                         do {
