@@ -72,6 +72,8 @@ export class GameState extends State {
         this.game.load.spritesheet("student1", "assets/human/player_tilesheet.png", 80, 110)
         this.game.load.spritesheet("guard", "assets/human/soldier_tilesheet.png", 80, 110)
         this.game.load.spritesheet("prof", "assets/human/zombie_tilesheet.png", 80, 110)
+        this.game.load.image("indicatorbattery", "assets/indicator_battery.png")
+        this.game.load.image("indicatorchasing", "assets/indicator_chasing.png")
         range(0, 3).forEach((i: number) => {
             this.loader.game.load.spritesheet(`car${i}`, `assets/car/car${i}.png`, 144, 144)
         })
@@ -116,6 +118,7 @@ export class GameState extends State {
         this.game.forceSingleUpdate = true
     }
     _update = () => {
+        //console.log("ENERGY", this.energyReserve)
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
@@ -793,7 +796,7 @@ export class GameState extends State {
     }
 
     pickUp(device: number) {
-        this.energyReserve += device
+        this.energyReserve = Math.min(100, this.energyReserve + device)
     }
 
     updateWalkingSound() {
