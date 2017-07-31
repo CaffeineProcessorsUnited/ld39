@@ -58,6 +58,7 @@ export class AI {
     private alertRadSq: number
     private device: number
     private spawned: boolean = false
+    private findingPath = false
 
     constructor(simulator: Simulator, type: AIType) {
         this.simulator = simulator
@@ -329,7 +330,7 @@ export class AI {
                 !nou(this.targetY) &&
                 this.sprite.x !== this.targetX &&
                 this.sprite.y !== this.targetY) {
-                log("GOT TARGET")
+                log("GOT TARGET", this.plannedPoints)
                 this.clearTimeout()
                 if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
                     this.speed = this.maxSpeed
@@ -355,7 +356,7 @@ export class AI {
                         break
                     case AIType.VEHICLE:
                         if (this.state === AIState.PARKING) {
-                            this.sitDown(this.position.x, this.position.y)
+                            //this.sitDown(this.position.x, this.position.y)
                         }
                         break
                     default:
@@ -583,6 +584,9 @@ export class AI {
     }
 
     setTarget(x: number, y: number): boolean {
+        if (this.findingPath) {
+            return
+        }
         if (x < 0 || y < 0 || x > this.gameState.map.widthInPixels || y > this.gameState.map.heightInPixels) {
             return false
         }
@@ -607,6 +611,7 @@ export class AI {
             log("FIND PATH")
             this.pathfinder.setTarget(new Phaser.Point(x, y))
             this.pathfinder.forceUpdate()
+            this.findingPath = true
         }
         return true
     }
@@ -625,6 +630,10 @@ export class AI {
             this.targetX = this.plannedPoints[this.plannedPoints.length - 1].x
             this.targetY = this.plannedPoints[this.plannedPoints.length - 1].y
         }
+    }
+
+    pathFound() {
+        this.findingPath = false
     }
 
     reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
