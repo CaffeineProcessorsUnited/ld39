@@ -59,6 +59,7 @@ export class Simulator {
                 object.setTilePosition(path.spawn)
                 break
         }
+        object.spawnPoint = path.spawn
         object.newSound()
         return object
     }
