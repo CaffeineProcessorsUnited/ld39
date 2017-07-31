@@ -91,11 +91,10 @@ export class AStar {
             current = curMinNode
             // console.log("mmmm", current)
             this.reconstructPath(this.cameFrom, this.to)
-            if (current.equals(this.to) || this.curIter > this.maxIter || this.curIter % 500 == 0) {
-                this.callback(this.reconstructPath(this.cameFrom, current))
-                if (current.equals(this.to) || this.curIter > this.maxIter) {
-                    return
-                }
+            if (current.equals(this.to) || this.curIter > this.maxIter) {
+                this.callback(this.reconstructPath(this.cameFrom, current), true)
+            } else if (this.curIter % 500 === 0) {
+                this.callback(this.reconstructPath(this.cameFrom, current), false)
             }
 
             let idx = this.currentNodes.indexOf(curMinNode)
@@ -166,12 +165,12 @@ export class AStar {
         ]) {
             let collide = this.collider(from.x + delta[0], from.y + delta[1])
 //            this.gamestate.game.debug.rectangle(
-                // new Phaser.Rectangle(
-                //     64 * (from.x + delta[0]),
-                //     64 * (from.y + delta[1]),
-                //     20,
-                //     20),
-                // collide ? "#ff0000" : "#00ff00")
+            // new Phaser.Rectangle(
+            //     64 * (from.x + delta[0]),
+            //     64 * (from.y + delta[1]),
+            //     20,
+            //     20),
+            // collide ? "#ff0000" : "#00ff00")
             if (!collide) {
                 ret.push(new Phaser.Point(from.x + delta[0], from.y + delta[1]))
             }
