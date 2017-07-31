@@ -246,6 +246,7 @@ export class AI {
     }
 
     update() {
+        log("UPDATE", this.type, this.state)
         // this.plannedPoints.forEach(value => {
         //     this.gameState.game.debug.rectangle(
         //         new Phaser.Rectangle(
@@ -341,7 +342,7 @@ export class AI {
                 let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
                 this.speed = this.maxSpeed
                 this.setTarget(newTarget.x, newTarget.y)
-            } else {
+            } else if (nou(this.targetX) || nou(this.targetY)) {
                 this.speed = 0
                 switch (this.type) {
                     case AIType.LEARNING:
