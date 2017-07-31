@@ -216,7 +216,6 @@ export class AI {
     }
 
     get position(): Phaser.Point {
-        log(this.sprite.position)
         return this.sprite.position
     }
 
@@ -231,8 +230,9 @@ export class AI {
         //         "#00ffff")
         // })
         if (!this.spawned) {
-            this.sprite.x = this.startPoint.x
-            this.sprite.y = this.startPoint.y
+            let pos = this.pathfinder.tile2pos(this.startPoint).clone()
+            this.sprite.x = pos.x
+            this.sprite.y = pos.y
             this.spawned = true
         }
 
