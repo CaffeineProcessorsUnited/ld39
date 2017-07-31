@@ -13,6 +13,12 @@
       "exit": "story:hide-dialog"
     },
     {
+      "x": 12,
+      "y": 3,
+      "enter": "story:tutorial2-enter",
+      "exit": "story:hide-dialog"
+    },
+    {
       "x":40,
       "y":20,
       "enter": "story:opendoor-mensa-upper"

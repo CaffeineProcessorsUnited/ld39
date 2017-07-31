@@ -2,7 +2,7 @@ import {log, State, range} from "../sgl/sgl"
 
 export class MenuState extends State {
 
-    ready: boolean = true// TODO: false
+    ready: boolean = false
     booted: boolean = false
     text: Phaser.Text
     keys: Phaser.Sound[] = []

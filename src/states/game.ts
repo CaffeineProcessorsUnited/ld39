@@ -14,7 +14,7 @@ enum LEVEL {
 
 export class GameState extends State {
 
-    energyLossPerSecond: number = 0.1
+    energyLossPerSecond: number = 1
     layers: { [layer: string]: Phaser.TilemapLayer } = {}
     zoom: number = 1
     map: Phaser.Tilemap
@@ -97,7 +97,7 @@ export class GameState extends State {
         this.simulator = new Simulator(this)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE)
-        //let t = this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(0, 0))
+        this.simulator.spawn(AIType.SLEEPING, AIState.IDLE, new Phaser.Point(12, 7))
 
         this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
         //this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
@@ -118,22 +118,26 @@ export class GameState extends State {
         this.game.forceSingleUpdate = true
     }
     _update = () => {
-        //console.log("ENERGY", this.energyReserve)
+        if (this.energyReserve <= 0) {
+            this.gameOver()
+            window.location.href = "./gameover.html" //fucking dirty hotfix, fix statechange asap
+        }
+
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
-        if (!this.sprinting) {
+        //if (!this.sprinting) {
             this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
-        }
+        //}
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
 
         // movement
         let damping = 100
-        let max = 200
-        let rate = 80
+        let max = 80
+        let rate = 30
         if (this.sprinting) {
-            max = 1000
-            rate = 900
+            max = 130
+            rate = 40
         }
 
         //this.ref("player", "player").rotation = this.ref("player", "player").body.angle
@@ -239,10 +243,10 @@ export class GameState extends State {
             window.document.getElementById("led4")!.style.animationDuration = "0s"
             this.gameOver()
 
-        } else if (this.energyReserve < 10) {
+        } else if (this.energyReserve < 20) {
             batled.style.animationName = "blink-red"
             batled.style.animationDuration = "1s"
-        } else if (this.energyReserve < 20) {
+        } else if (this.energyReserve < 30) {
             batled.style.fill = "orange"
             batled.style.animationDuration = "0s"
 
@@ -250,13 +254,14 @@ export class GameState extends State {
             batled.style.fill = "lime"
             batled.style.animationDuration = "0s"
         }
+
     }
     _render = () => {
         // this.game.debug.body(this.ref("player", "player"))
         // this.game.debug.cameraInfo(this.game.camera, 32, 32)
     }
 
-    _energyReserve: number = 100
+    _energyReserve: number = 30
 
     get energyReserve() {
         return this._energyReserve
@@ -458,9 +463,10 @@ export class GameState extends State {
     }
 
     gameOver() {
-        this.shutdown()
-        //console.log("GAME OVER")
         this.changeState("end")
+        this.shutdown()
+        log("GAME OVER")
+
     }
 
     clubPlayer(amount: number) {
@@ -561,7 +567,11 @@ export class GameState extends State {
                 this.showDialogAbove("dialog", t.x, t.y, "Welcome to the game!")
                 break
             case "tutorial1-enter":
-                this.showDialogAbove("dialog", t.x, t.y, "Papers on the floor can be very usefull ;)")
+                this.showDialogAbove("dialog", t.x, t.y, "Papers on the floor can be very useful ;)")
+                this.unlockLevel(LEVEL.PARKINGLOT)
+                break
+            case "tutorial2-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "You might have noticed that your Battery is running low.\n But that guy over there looks like he has a full charge in his smartphone...\n Try pressing <space> next to him...")
                 this.unlockLevel(LEVEL.PARKINGLOT)
                 break
             case "message-under-construction-enter":

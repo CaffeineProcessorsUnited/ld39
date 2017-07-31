@@ -193,7 +193,8 @@ export class AI {
             default:
                 throw new Error("Unknown AIType. Fix your shit!")
         }
-        this.reactionDelay *= 2
+        this.reactionDelay *= 1.8
+        this.maxSpeed *= 2
         this.newSound()
         this.maxSpeed *= this.tileSize
         this.sprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, spriteKey))
