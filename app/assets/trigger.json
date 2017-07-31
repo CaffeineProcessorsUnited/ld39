@@ -122,6 +122,26 @@
       "enter": "story:opendoor-library-upper"
     },
     {
+      "x":111,
+      "y":10,
+      "enter": "story:opendoor-library-top"
+    },
+    {
+      "x":111,
+      "y":12,
+      "enter": "story:opendoor-library-top"
+    },
+    {
+      "x":112,
+      "y":10,
+      "enter": "story:opendoor-library-top"
+    },
+    {
+      "x":112,
+      "y":12,
+      "enter": "story:opendoor-library-top"
+    },
+    {
       "x":89,
       "y":41,
       "enter": "story:opendoor-library-lower"

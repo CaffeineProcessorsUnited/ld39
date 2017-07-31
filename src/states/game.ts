@@ -1,6 +1,6 @@
 import {Dialog, error, Layer, LayerManager, log, State} from "../sgl/sgl"
 import {Trigger} from "../classes/trigger"
-import {AI, AIState, AIType} from "../classes/ai"
+import {AIState, AIType} from "../classes/ai"
 import {choose, nou, range} from "../sgl/util"
 import {Simulator} from "../classes/simulator"
 import {Pathfinder} from "../classes/pathfinder"
@@ -36,7 +36,7 @@ export class GameState extends State {
     }
     _preload = () => {
         this.game.load.image("logo", "assets/logo.png")
-        this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
+        //this.game.load.image("player", "assets/Unit/medievalUnit_24.png")
         this.game.load.image("dialog", "assets/dialog.png")
         this.game.load.tilemap("tilemap", "assets/MapLib.json", null, Phaser.Tilemap.TILED_JSON)
         this.game.load.image("tilesheet_city", "assets/tilesheet_city.png")
@@ -66,7 +66,13 @@ export class GameState extends State {
         range(0, 2).forEach((i: number) => {
             this.loader.game.load.audio(`club${i}`, `assets/audio/club${i}.ogg`)
         })
+        this.game.load.spritesheet("player", "assets/human/adventurer_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("npc0", "assets/human/adventurer_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("npc1", "assets/human/female_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("npc2", "assets/human/soldier_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("npc3", "assets/human/zombie_tilesheet.png", 80, 110)
     }
+
     _create = () => {
 
         this.game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL
@@ -109,7 +115,9 @@ export class GameState extends State {
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
-        this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
+        if(!this.sprinting) {
+            this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
+        }
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
 
         // movement
@@ -121,7 +129,7 @@ export class GameState extends State {
             rate = 900
         }
 
-        this.ref("player", "player").rotation = this.ref("player", "player").body.angle
+        //this.ref("player", "player").rotation = this.ref("player", "player").body.angle
 
         if (this.ref("player", "player").body.velocity.x >= max) {
             this.ref("player", "player").body.velocity.x = max
@@ -136,15 +144,40 @@ export class GameState extends State {
             this.ref("player", "player").body.velocity.y = max * -1
         }
 
-
         let walking = false
+        let animationPLayed = false
+
+        if (this.cursors.up.isDown) {
+            this.ref("player", "player").body.velocity.y -= rate
+            this.ref("player", "player").animations.play("up")
+            walking = true
+            animationPLayed = true
+        } else if (this.cursors.down.isDown) {
+            this.ref("player", "player").body.velocity.y += rate
+            this.ref("player", "player").animations.play("down")
+            walking = true
+            animationPLayed = true
+        } else {
+            if (this.ref("player", "player").body.velocity.y >= damping) {
+                this.ref("player", "player").body.velocity.y -= damping
+            } else if (this.ref("player", "player").body.velocity.y <= damping * -1) {
+                this.ref("player", "player").body.velocity.y += damping
+            } else {
+                this.ref("player", "player").body.velocity.y = 0
+            }
+        }
+
         if (this.cursors.left.isDown) {
             this.ref("player", "player").body.velocity.x -= rate
-            // this.ref("player", "player").animations.play("left")
+            if (!animationPLayed) {
+                this.ref("player", "player").animations.play("left")
+            }
             walking = true
         } else if (this.cursors.right.isDown) {
             this.ref("player", "player").body.velocity.x += rate
-            // this.ref("player", "player").animations.play("right")
+            if (!animationPLayed) {
+                this.ref("player", "player").animations.play("right")
+            }
             walking = true
         } else {
             if (this.ref("player", "player").body.velocity.x >= damping) {
@@ -153,26 +186,6 @@ export class GameState extends State {
                 this.ref("player", "player").body.velocity.x += damping
             } else {
                 this.ref("player", "player").body.velocity.x = 0
-            }
-        }
-
-        if (this.cursors.up.isDown) {
-            this.ref("player", "player").body.velocity.y -= rate
-            // this.ref("player", "player").animations.play("up")
-            walking = true
-        } else if (this.cursors.down.isDown) {
-            this.ref("player", "player").body.velocity.y += rate
-            // this.ref("player", "player").animations.play("down")
-            walking = true
-        } else {
-            // this.ref("player", "player").animations.stop()
-            // this.ref("player", "player").frame = 4
-            if (this.ref("player", "player").body.velocity.y >= damping) {
-                this.ref("player", "player").body.velocity.y -= damping
-            } else if (this.ref("player", "player").body.velocity.y <= damping * -1) {
-                this.ref("player", "player").body.velocity.y += damping
-            } else {
-                this.ref("player", "player").body.velocity.y = 0
             }
         }
 
@@ -186,6 +199,8 @@ export class GameState extends State {
                 // stopped walking
                 this.walkSound(false)
             }
+            this.ref("player", "player").animations.stop()
+            // this.ref("player", "player").frame = 4
         }
         this.walking = walking
 
@@ -330,8 +345,10 @@ export class GameState extends State {
         this.map.setCollision([2045], true, "Collision", false)
         this.map.setCollisionBetween(2046, 2056/* TODO: Own Tilesheet */, true, "Tables", false)
 
-        this.layerManager.layer("player").addRef("player", this.game.add.sprite(50 * this.map.tileWidth + 32, 5 * this.map.tileHeight + 32, "player"))
+        this.layerManager.layer("player").addRef("player", this.game.add.sprite(0 * this.map.tileWidth + 32, 5 * this.map.tileHeight + 32, "player"))
+        this.ref("player", "player").scale.set(0.5)
         this.ref("player", "player").anchor.set(0.5)
+        this.addAnimations(this.ref("player", "player"))
         this.game.physics.enable(this.ref("player", "player"))
         this.ref("player", "player").body.collideWorldBounds = true
 
@@ -553,33 +570,38 @@ export class GameState extends State {
                 this.hideDialog("dialog")
                 break
             case "opendoor-mensa-upper":
-                this.openDoor(40, 19, 455, LEVEL.MENSA)
-                this.openDoor(41, 19, 455, LEVEL.MENSA)
+                this.openDoor(40, 19, 1280, LEVEL.MENSA)
+                this.openDoor(41, 19, 1279, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-lower":
-                this.openDoor(51, 27, 455, LEVEL.MENSA)
-                this.openDoor(51, 28, 455, LEVEL.MENSA)
+                this.openDoor(51, 27, 1242, LEVEL.MENSA)
+                this.openDoor(51, 28, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-inner":
-                this.openDoor(65, 9, 455, LEVEL.MENSA)
-                this.openDoor(65, 10, 455, LEVEL.MENSA)
+                this.openDoor(65, 9, 1242, LEVEL.MENSA)
+                this.openDoor(65, 10, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-exit":
-                this.openDoor(79, 36, 455, LEVEL.MENSA)
-                this.openDoor(79, 37, 455, LEVEL.MENSA)
+                this.openDoor(79, 36, 1242, LEVEL.MENSA)
+                this.openDoor(79, 37, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-library-upper":
-                this.openDoor(92, 39, 455, LEVEL.LIBRARY)
-                this.openDoor(93, 39, 455, LEVEL.LIBRARY)
+                this.openDoor(92, 39, 1280, LEVEL.LIBRARY)
+                this.openDoor(93, 39, 1279, LEVEL.LIBRARY)
+                this.showDialogAbove("dialog", t.x, t.y, "HODOR")
+                break
+            case "opendoor-library-top":
+                this.openDoor(111, 11, 1280, LEVEL.LIBRARY)
+                this.openDoor(112, 11, 1279, LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-library-lower":
-                this.openDoor(90, 41, 455, LEVEL.LIBRARY)
-                this.openDoor(90, 42, 455, LEVEL.LIBRARY)
+                this.openDoor(90, 41, 1242, LEVEL.LIBRARY)
+                this.openDoor(90, 42, 1243, LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "teleport":
@@ -754,5 +776,13 @@ export class GameState extends State {
                 this.walkingSound.stop()
             }
         }
+    }
+
+    addAnimations(sprite: Phaser.Sprite) {
+        sprite.animations.add("left", [24, 25, 26, 25], 10, true)
+        sprite.animations.add("right", [0, 10, 9, 10], 10, true)
+        sprite.animations.add("up", [22, 5, 22, 6], 10, true)
+        sprite.animations.add("down", [0, 17], 8, true)
+        log("ANIMATION", sprite.animations.isLoaded)
     }
 }
