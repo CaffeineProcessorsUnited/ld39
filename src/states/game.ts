@@ -3,6 +3,7 @@ import {Trigger} from "../classes/trigger"
 import {AI, AIState, AIType} from "../classes/ai"
 import {choose, nou, range} from "../sgl/util"
 import {Simulator} from "../classes/simulator"
+import {Pathfinder} from "../classes/pathfinder"
 
 enum LEVEL {
     PARKINGLOT,
@@ -564,22 +565,19 @@ export class GameState extends State {
         }
     }
 
-    getTilesForType(id: number, layer?: string): Phaser.Point[] {
-        return this.map.tiles
-            .filter((tile: Phaser.Tile) => {
-                if (tile.index !== id) {
-                    return false
-                }
-                if (nou(layer)) {
-                    return true
-                }
-                if (nou(tile.layer)) {
-                    return false
-                }
-                return tile.layer.name === layer
+    getTilesForType(id: number, layer: string): Phaser.Point[] {
+        const layerID = this.map.getLayer(layer)
+        const _layer = this.map.layers[layerID]
 
-            })
-            .map((tile: Phaser.Tile) => new Phaser.Point(tile.x, tile.y))
+        let data: Phaser.Point[] = []
+        for (let y of range(0, this.map.height)) {
+            for (let x of range(0, this.map.width)) {
+                if (_layer.data[y][x].index === id) {
+                    data.push(new Phaser.Point(x, y))
+                }
+            }
+        }
+        return data
     }
 
     getChairTiles(tiles: Phaser.Point[]): Phaser.Point[] {
@@ -616,13 +614,13 @@ export class GameState extends State {
         // TODO: Set correct ID
         switch (level) {
             case LEVEL.PARKINGLOT:
-                return this.getTilesForType(9996)
+                return this.getTilesForType(9996, "Level")
             case LEVEL.MENSA:
-                return this.getTilesForType(9997)
+                return this.getTilesForType(2149, "Level")
             case LEVEL.LIBRARY:
-                return this.getTilesForType(9998)
+                return this.getTilesForType(9998, "Level")
             case LEVEL.PCPOOL:
-                return this.getTilesForType(9999)
+                return this.getTilesForType(9999, "Level")
             default:
                 return []
         }
@@ -631,7 +629,9 @@ export class GameState extends State {
     spawnPlayer(tiles: Phaser.Point[], types: AIType[], state: AIState) {
         let tile = choose(tiles)
         let type = choose(types)
-        this.simulator.spawn(type, state, tile)
+        console.log("Spawning player with", tile.x, tile.y, type, state)
+        let pos = Pathfinder.tile2pos(this, tile)
+        console.log(this.simulator.spawn(type, state, undefined, tile.clone()).sitDown(Math.floor(pos.x), Math.floor(pos.y)))
     }
 
     spreadPlayers(level: number) {
@@ -645,7 +645,7 @@ export class GameState extends State {
             ]
 
             // Spawn generic people
-            range(0, 10).forEach(() => this.spawnPlayer(points, type, AIState.STROLL))
+            // range(0, 10).forEach(() => this.spawnPlayer(points, type, AIState.STROLL))
 
 
             if (level === LEVEL.PARKINGLOT) {
@@ -654,7 +654,8 @@ export class GameState extends State {
                 level === LEVEL.LIBRARY ||
                 level === LEVEL.PCPOOL) {
                 let chairs = this.getChairTiles(points)
-                range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+                console.log("++*+", chairs)
+                range(0, 50).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
     }
