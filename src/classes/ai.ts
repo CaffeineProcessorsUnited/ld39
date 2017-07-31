@@ -2,8 +2,8 @@ import {error, log, nou} from "../sgl/sgl"
 import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
-import {Simulator} from "./simulator";
-import {choose, random} from "../sgl/util";
+import {Simulator} from "./simulator"
+import {choose, random} from "../sgl/util"
 
 export enum AIState {
     IDLE,
@@ -207,7 +207,7 @@ export class AI {
         this.pathfinder.setCurrent(this.position)
 
         if (this.state === AIState.SITTING && this.goHome.getRand()) {
-            console.error("STANDUP");
+            console.error("STANDUP")
             this.standUp()
         }
 
@@ -339,6 +339,7 @@ export class AI {
                 this.sprite.body.velocity.x = dx / dist * this.speed
                 this.sprite.body.velocity.y = dy / dist * this.speed
 
+                //
                 // this.plannedPoints.forEach(value => {
                 //     this.gameState.game.debug.rectangle(
                 //         new Phaser.Rectangle(
@@ -575,7 +576,7 @@ export class AI {
     }
 
     onPathComplete() {
-        log("PATH DONE")
+        //log("PATH DONE")
         if (!nou(this.onPathCompleteHandler)) {
             this.onPathCompleteHandler()
         }

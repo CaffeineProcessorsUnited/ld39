@@ -641,23 +641,41 @@ export class GameState extends State {
     spawnPlayer(tiles: Phaser.Point[], types: AIType[], state: AIState) {
         let tile = choose(tiles)
         let type = choose(types)
-        console.log("Spawning player with", tile.x, tile.y, type, state)
         let pos = Pathfinder.tile2pos(this, tile)
-        console.log(this.simulator.spawn(type, state, undefined, tile.clone()).sitDown(Math.floor(pos.x), Math.floor(pos.y)))
+
+        let npc
+        if (type === AIType.STANDING) {
+            npc = this.simulator.spawn(type, state, tile.clone(), tile.clone())
+        } else {
+            npc = this.simulator.spawn(type, state, undefined, tile.clone())
+            if (state === AIState.SITTING) {
+                npc.sitDown(Math.floor(pos.x), Math.floor(pos.y))
+            }
+        }
+
     }
 
     spreadPlayers(level: number) {
         let points = this.getTilesForLevel(level)
         if (points.length > 0) {
             const type = [
-                AIType.STANDING,
-                AIType.GUARD,
-                AIType.WORKING,
-                AIType.PROF,
+                // AIType.GUARD,
+                // AIType.PROF,
+                AIType.EATING,
             ]
 
             // Spawn generic people
-            // range(0, 10).forEach(() => this.spawnPlayer(points, type, AIState.STROLL))
+            range(0, 10).forEach((id) => {
+                window.setTimeout(() => {
+                    this.spawnPlayer(points, [AIType.STANDING], AIState.STROLL)
+                }, id * 10000)
+            })
+
+            range(0, 20).forEach((id) => {
+                window.setTimeout(() => {
+                    this.spawnPlayer(points, type, AIState.IDLE)
+                }, id * 5000)
+            })
 
 
             if (level === LEVEL.PARKINGLOT) {
@@ -666,8 +684,8 @@ export class GameState extends State {
                 level === LEVEL.LIBRARY ||
                 level === LEVEL.PCPOOL) {
                 let chairs = this.getChairTiles(points)
-                console.log("++*+", chairs)
-                range(0, 50).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+                //console.log("++*+", chairs)
+                range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
     }

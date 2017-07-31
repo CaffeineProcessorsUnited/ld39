@@ -17,12 +17,45 @@ export class Pathfinder {
     private gs: GameState
 
     private dirty: boolean
+    private staticTarget: boolean
     private interval: number
+    private astar: AStar
 
-    constructor(npc: AI, gs: GameState) {
+    constructor(npc: AI, gs: GameState, staticTarget: boolean = true) {
         this.npc = npc
         this.gs = gs
-        this.interval = setInterval(this.onUpdate.bind(this), 250)
+        this.staticTarget = staticTarget
+        if (staticTarget) {
+            this.interval = setTimeout(this.onUpdate.bind(this), 250)
+        } else {
+            this.interval = setInterval(this.onUpdate.bind(this), 250)
+        }
+    }
+
+    static tile2pos(gameState: GameState, tile: Phaser.Point): Phaser.Point {
+        return new Phaser.Point(
+            tile.x * gameState.map.tileWidth + gameState.map.tileWidth / 2,
+            tile.y * gameState.map.tileHeight + gameState.map.tileHeight / 2,
+        )
+    }
+
+    static pos2tile(gameState: GameState, pos: Phaser.Point): Phaser.Point {
+        return new Phaser.Point(
+            Math.floor(pos.x / gameState.map.tileWidth),
+            Math.floor(pos.y / gameState.map.tileHeight),
+        )
+    }
+
+    private static pathEquals(a: Phaser.Point[], b: Phaser.Point[]): boolean {
+        if (a.length !== b.length) {
+            return false
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (!a[i].equals(b[i])) {
+                return false
+            }
+        }
+        return true
     }
 
     setCurrent(pos: Phaser.Point) {
@@ -45,20 +78,6 @@ export class Pathfinder {
         return Pathfinder.pos2tile(this.gs, pos)
     }
 
-    static tile2pos(gameState: GameState, tile: Phaser.Point): Phaser.Point {
-        return new Phaser.Point(
-            tile.x * gameState.map.tileWidth + gameState.map.tileWidth / 2,
-            tile.y * gameState.map.tileHeight + gameState.map.tileHeight / 2,
-        )
-    }
-
-    static pos2tile(gameState: GameState, pos: Phaser.Point): Phaser.Point {
-        return new Phaser.Point(
-            Math.floor(pos.x / gameState.map.tileWidth),
-            Math.floor(pos.y / gameState.map.tileHeight),
-        )
-    }
-
     private onUpdate() {
         if (!this.dirty) {
             // console.log("GOT TO UPDATE, BUT NO CHANGES")
@@ -69,30 +88,27 @@ export class Pathfinder {
             return
         }
 
-        let astar = new AStar(this.gs)
+        this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, (plannedTile: Phaser.Point[]) => {
 
-        let plannedTile = astar.getPath(this.curTile, this.targetTile)
+            plannedTile.forEach((p) => {
+                this.gs.game.debug.rectangle(
+                    new Phaser.Rectangle(
+                        p.x * this.gs.map.width,
+                        p.y * this.gs.map.height,
+                        20,
+                        20),
+                    "#ff0000")
+            })
 
-        if (nou(this.plannedTile) || !Pathfinder.pathEquals(this.plannedTile, plannedTile)) {
-            this.plannedTile = plannedTile
-            this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
-            this.plannedPos.push(this.targetPos)
+            if (nou(this.plannedTile) || !Pathfinder.pathEquals(this.plannedTile, plannedTile)) {
+                this.plannedTile = plannedTile
+                this.plannedPos = this.plannedTile.map(value => this.tile2pos(value))
+                this.plannedPos.push(this.targetPos)
 
-            this.npc.newTargets(this.plannedPos.slice(1))
-            this.dirty = false
-        }
-    }
-
-    private static pathEquals(a: Phaser.Point[], b: Phaser.Point[]): boolean {
-        if (a.length !== b.length) {
-            return false
-        }
-        for (let i = 0; i < a.length; i++) {
-            if (!a[i].equals(b[i])) {
-                return false
+                this.npc.newTargets(this.plannedPos.slice(1))
+                this.dirty = false
             }
-        }
-        return true
+        })
     }
 
 }
