@@ -1,3 +1,5 @@
+import {log} from "../sgl/util";
+
 export class IncRand {
     incPerSec: number
     minDuration: number
@@ -17,6 +19,7 @@ export class IncRand {
     }
 
     reset(stopped: boolean = false) {
+        log("RESET RENDOM", this)
         this.start = Date.now()
         this.chance = 0
         this.stopped = stopped

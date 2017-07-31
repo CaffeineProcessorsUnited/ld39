@@ -54,6 +54,9 @@ export class GameState extends State {
         range(0, 8).forEach((i: number) => {
             this.loader.game.load.audio(`piano${i}`, `assets/audio/piano${i}.ogg`)
         })
+        range(0, 2).forEach((i: number) => {
+            this.loader.game.load.audio(`club${i}`, `assets/audio/club${i}.ogg`)
+        })
     }
     _create = () => {
 
@@ -72,12 +75,12 @@ export class GameState extends State {
 
         this.simulator = new Simulator(this)
         // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
-        this.simulator.spawn(AIType.GUARD, AIState.IDLE)
+        // this.simulator.spawn(AIType.GUARD, AIState.IDLE)
         this.simulator.spawn(AIType.GUARD, AIState.IDLE, new Phaser.Point(10, 10))
-        // this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
-        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
-        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
-        this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        this.simulator.spawn(AIType.VEHICLE, AIState.PARKING)
+        // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
+        // this.simulator.spawn(AIType.VEHICLE, AIState.DRIVING)
 
         setTimeout(() => {
             //this.npc[0].sitDown(125, 125)
@@ -391,6 +394,7 @@ export class GameState extends State {
     clubPlayer(amount: number) {
         this.energyReserve -= amount
         this.game.camera.shake(0.01, 200)
+        this.playSound("club", `club${choose([0, 1])}`)
     }
 
     stateResize(width: number, height: number) {
@@ -553,7 +557,7 @@ export class GameState extends State {
         switch (key) {
             case "piano-low":
             case "piano-high":
-                this.playSound("piano", true)
+                this.stopSound("piano")
                 break
             default:
                 error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
@@ -653,5 +657,9 @@ export class GameState extends State {
                 range(0, 10).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
+    }
+
+    pickUp(device: number) {
+        this.energyReserve += device
     }
 }

@@ -3,6 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator";
+import {random} from "../sgl/util";
 
 export enum AIState {
     IDLE,
@@ -55,6 +56,8 @@ export class AI {
     private maxWalkDistance: number
     private replacedTile: number
     private goHome: IncRand
+    private alertRadSq: number
+    private device: number
 
     constructor(simulator: Simulator, type: AIType) {
         this.simulator = simulator
@@ -73,6 +76,8 @@ export class AI {
 
         this.tileSize = this.gameState.map.tileWidth
 
+        this.device = random(5, 40)
+
         switch (type) {
             case AIType.DUMMY:
                 this.maxSpeed = 0
@@ -82,6 +87,7 @@ export class AI {
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0, true)
                 this.goHome = new IncRand(0, 0, 0, true)
+                this.alertRadSq = 0
                 spriteKey = "dummy"
                 break
             case AIType.STANDING:
@@ -93,6 +99,7 @@ export class AI {
                 this.maxWalkDistance = 20
                 this.giveUp = new IncRand(0.02, 8, 30)
                 this.goHome = new IncRand(0.02, 20, 300)
+                this.alertRadSq = 8
                 spriteKey = "standing"
                 break
             case AIType.GUARD:
@@ -104,6 +111,8 @@ export class AI {
                 this.maxWalkDistance = 30
                 this.giveUp = new IncRand(0.01, 10, 50)
                 this.goHome = new IncRand(0, 0, 0, true)
+                this.alertRadSq = 25
+                this.device = 0
                 spriteKey = "guard"
                 break
             case AIType.PROF:
@@ -115,6 +124,7 @@ export class AI {
                 this.maxWalkDistance = 15
                 this.giveUp = new IncRand(0.04, 6, 20)
                 this.goHome = new IncRand(0.01, 120, 600)
+                this.alertRadSq = 12
                 spriteKey = "prof"
                 break
             case AIType.EATING:
@@ -125,6 +135,7 @@ export class AI {
                 this.maxWalkDistance = 8
                 this.giveUp = new IncRand(0.04, 6, 10)
                 this.goHome = new IncRand(0.01, 100, 300)
+                this.alertRadSq = 6
                 spriteKey = "eating"
                 break
             case AIType.LEARNING:
@@ -135,6 +146,7 @@ export class AI {
                 this.maxWalkDistance = 17
                 this.giveUp = new IncRand(0.03, 10, 20)
                 this.goHome = new IncRand(0.03, 100, 300)
+                this.alertRadSq = 5
                 spriteKey = "learning"
                 break
             case AIType.WORKING:
@@ -145,6 +157,7 @@ export class AI {
                 this.maxWalkDistance = 10
                 this.giveUp = new IncRand(0.03, 10, 16)
                 this.goHome = new IncRand(0.02, 120, 300)
+                this.alertRadSq = 7
                 spriteKey = "working"
                 break
             case AIType.SLEEPING:
@@ -155,16 +168,18 @@ export class AI {
                 this.maxWalkDistance = 5
                 this.giveUp = new IncRand(0.05, 2, 10)
                 this.goHome = new IncRand(0.02, 100, 300)
+                this.alertRadSq = 2
                 spriteKey = "sleeping"
                 break
             case AIType.VEHICLE:
-                this.maxSpeed = 2
+                this.maxSpeed = 4
                 this.reactionDelay = 0
                 this.alert = 0
                 this.armLength = 10
                 this.maxWalkDistance = 0
                 this.giveUp = new IncRand(0, 0, 0)
                 this.goHome = new IncRand(0.06, 20, 300)
+                this.alertRadSq = 0
                 spriteKey = "vehicle"
                 break
             default:
@@ -199,11 +214,12 @@ export class AI {
 
             if (this.canReach()) {
                 log("CLUB")
+                this.giveUp.reset()
                 this.canBeRobbed = true
                 if (this.type === AIType.VEHICLE) {
-                    this.gameState.clubPlayer(40)
+                    this.gameState.clubPlayer(40 + this.device)
                 } else {
-                    this.gameState.clubPlayer(10)
+                    this.gameState.clubPlayer(10 + this.device)
                 }
                 this.setStroll()
                 return
@@ -263,6 +279,8 @@ export class AI {
                         if (this.state === AIState.PARKING) {
                             this.sitDown(this.position.x, this.position.y)
                         }
+                        break
+                    default:
                         break
                 }
             }
@@ -376,13 +394,20 @@ export class AI {
     }
 
     pickPocket() {
-        if (!this.canBeRobbed) {
+        if (!this.canBeRobbed && this.type !== AIType.GUARD) {
             return
         }
         const rand = Math.random() * 100
         if (rand < this.alert) {
-            this.canBeRobbed = false
-            this.setChasing()
+            let dx = this.position.x - this.gameState.currentTile.worldX
+            let dy = this.position.y - this.gameState.currentTile.worldY
+            if (dx * dx + dy * dy < this.alertRadSq * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
+                this.canBeRobbed = false
+                if (this.type !== AIType.GUARD) {
+                    this.gameState.pickUp(this.device)
+                }
+                this.setChasing()
+            }
         }
     }
 

@@ -12,17 +12,16 @@ export class Simulator {
         this.gameState = gameState
     }
 
-    spawn(type: AIType, state: AIState, spawn?: Phaser.Point, reserved?: Phaser.Point) {
+    spawn(type: AIType, state: AIState, spawn?: Phaser.Point, reserved?: Phaser.Point): AI {
         if (nou(this.entities[type.valueOf()])) {
             this.entities[type.valueOf()] = []
         }
         let i = this.entities[type.valueOf()].push(new AI(this, type)) - 1
         this.entities[type.valueOf()][i].state = state
-        this.respawn(this.entities[type.valueOf()][i], spawn, reserved)
-
+        return this.respawn(this.entities[type.valueOf()][i], spawn, reserved)
     }
 
-    respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point) {
+    respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point): AI {
         let type = object.type
         let state = object.state
         switch (type) {
@@ -61,6 +60,7 @@ export class Simulator {
                 break
         }
         object.newSound()
+        return object
     }
 
     getPath(type: AIType) {
@@ -115,11 +115,7 @@ export class Simulator {
     pickPocket() {
         Object.getOwnPropertyNames(this.entities).forEach((type: string) => {
             this.entities[type].forEach((entity: AI) => {
-                let dx = entity.position.x - this.gameState.currentTile.worldX
-                let dy = entity.position.y - this.gameState.currentTile.worldY
-                if (dx * dx + dy * dy < 4 * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
-                    entity.pickPocket()
-                }
+                entity.pickPocket()
             })
         })
     }
