@@ -88,11 +88,11 @@ export class Pathfinder {
 
     private onUpdate() {
         if (!this.dirty) {
-            console.log("GOT TO UPDATE, BUT NO CHANGES")
+            //console.log("GOT TO UPDATE, BUT NO CHANGES")
             return
         }
         if (!this.curPos || !this.targetPos) {
-            console.log("SHOULD CALCULATE PATH. MISSING VALUES")
+            //console.log("SHOULD CALCULATE PATH. MISSING VALUES")
             return
         }
         this.astar = new AStar(this.gs, this.curTile, this.targetTile, this.staticTarget ? 10000 : 500, this.npc.getCollider(), (plannedTile: Phaser.Point[], done: boolean) => {

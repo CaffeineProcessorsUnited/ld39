@@ -115,7 +115,9 @@ export class GameState extends State {
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
-        this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
+        if(!this.sprinting) {
+            this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
+        }
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
 
         // movement
@@ -518,10 +520,14 @@ export class GameState extends State {
         if (this.unlockedLevel[level]) {
             this.replaceTile(x, y, tid, "Doors")
             this.replaceTile(x, y, -1, "Collision")
+            // this.simulator.forceUpdate()
         }
     }
 
     unlockLevel(idx: number) {
+        if (!this.unlockedLevel[idx]) {
+            this.spreadPlayers(idx)
+        }
         this.unlockedLevel[idx] = true
     }
 
@@ -551,12 +557,10 @@ export class GameState extends State {
                 break
             case "unlock-mensa":
                 this.unlockLevel(LEVEL.MENSA)
-                this.spreadPlayers(LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked mensa")
                 break
             case "unlock-library":
                 this.unlockLevel(LEVEL.LIBRARY)
-                this.spreadPlayers(LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked library")
                 break
             case "message-under-construction-enter":
@@ -566,33 +570,38 @@ export class GameState extends State {
                 this.hideDialog("dialog")
                 break
             case "opendoor-mensa-upper":
-                this.openDoor(40, 19, 455, LEVEL.MENSA)
-                this.openDoor(41, 19, 455, LEVEL.MENSA)
+                this.openDoor(40, 19, 1280, LEVEL.MENSA)
+                this.openDoor(41, 19, 1279, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-lower":
-                this.openDoor(51, 27, 455, LEVEL.MENSA)
-                this.openDoor(51, 28, 455, LEVEL.MENSA)
+                this.openDoor(51, 27, 1242, LEVEL.MENSA)
+                this.openDoor(51, 28, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-inner":
-                this.openDoor(65, 9, 455, LEVEL.MENSA)
-                this.openDoor(65, 10, 455, LEVEL.MENSA)
+                this.openDoor(65, 9, 1242, LEVEL.MENSA)
+                this.openDoor(65, 10, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-mensa-exit":
-                this.openDoor(79, 36, 455, LEVEL.MENSA)
-                this.openDoor(79, 37, 455, LEVEL.MENSA)
+                this.openDoor(79, 36, 1242, LEVEL.MENSA)
+                this.openDoor(79, 37, 1243, LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-library-upper":
-                this.openDoor(92, 39, 455, LEVEL.LIBRARY)
-                this.openDoor(93, 39, 455, LEVEL.LIBRARY)
+                this.openDoor(92, 39, 1280, LEVEL.LIBRARY)
+                this.openDoor(93, 39, 1279, LEVEL.LIBRARY)
+                this.showDialogAbove("dialog", t.x, t.y, "HODOR")
+                break
+            case "opendoor-library-top":
+                this.openDoor(111, 11, 1280, LEVEL.LIBRARY)
+                this.openDoor(112, 11, 1279, LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "opendoor-library-lower":
-                this.openDoor(90, 41, 455, LEVEL.LIBRARY)
-                this.openDoor(90, 42, 455, LEVEL.LIBRARY)
+                this.openDoor(90, 41, 1242, LEVEL.LIBRARY)
+                this.openDoor(90, 42, 1243, LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "HODOR")
                 break
             case "teleport":
@@ -697,7 +706,7 @@ export class GameState extends State {
         if (type === AIType.STANDING) {
             this.simulator.spawn(type, state, tile.clone(), tile.clone())
         } else {
-            let npc = this.simulator.spawn(type, state, undefined, undefined)
+            let npc = this.simulator.spawn(type, state, undefined, tile.clone())
             if (state === AIState.SITTING) {
                 npc.sitDown(Math.floor(pos.x), Math.floor(pos.y))
             }
@@ -708,8 +717,8 @@ export class GameState extends State {
         let points = this.getTilesForLevel(level)
         if (points.length > 0) {
             const type = [
-                AIType.GUARD,
-                AIType.PROF,
+                // AIType.GUARD,
+                // AIType.PROF,
                 AIType.EATING,
             ]
 
@@ -720,11 +729,11 @@ export class GameState extends State {
                 }, id * 1000)
             })
 
-            /*range(0, 20).forEach((id) => {
+            range(0, 20).forEach((id) => {
                 window.setTimeout(() => {
                     this.spawnPlayer(points, type, AIState.IDLE)
                 }, id * 5000)
-            })*/
+            })
 
 
             if (level === LEVEL.PARKINGLOT) {
@@ -734,7 +743,7 @@ export class GameState extends State {
                 level === LEVEL.PCPOOL) {
                 let chairs = this.getChairTiles(points)
                 //console.log("++*+", chairs)
-                //range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+                range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
     }

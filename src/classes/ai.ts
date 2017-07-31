@@ -276,10 +276,10 @@ export class AI {
         }
 
         if (this.type === AIType.VEHICLE) {
-            //this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["road"])
+            // this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["road"])
         } else {
             this.gameState.game.physics.arcade.collide(this.sprite)
-            this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
+            // this.gameState.game.physics.arcade.collide(this.sprite, this.gameState.layers["collision"])
         }
         this.pathfinder.setCurrent(this.position)
         this.sound()
@@ -338,11 +338,14 @@ export class AI {
                 !nou(this.targetY) &&
                 this.sprite.x !== this.targetX &&
                 this.sprite.y !== this.targetY) {
-                // log("GOT TARGET", this.plannedPoints)
                 this.clearTimeout()
                 this.speed = 0
-                if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
-                    this.speed = this.maxSpeed
+                if (!nou(this.plannedPoints) && this.plannedPoints.length > 0) {
+                    if (this.type === AIType.VEHICLE) {
+                        this.speed = this.maxSpeed
+                    } else {
+                        this.speed = this.maxSpeed
+                    }
                 } else {
                     this.setStroll()
                 }
@@ -710,5 +713,9 @@ export class AI {
                 console.log("Cannot find suitable location for stroll")
             }
         }, delay * 1000)
+    }
+
+    forcePathUpdate(){
+        this.pathfinder.forceUpdate()
     }
 }

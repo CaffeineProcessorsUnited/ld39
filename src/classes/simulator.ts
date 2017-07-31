@@ -126,4 +126,11 @@ export class Simulator {
         return this.reservedTiles.hasOwnProperty(tile.toString())
     }
 
+    forceUpdate() {
+        Object.getOwnPropertyNames(this.entities).forEach((type: string) => {
+            this.entities[type].forEach((entity: AI) => {
+                entity.forcePathUpdate()
+            })
+        })
+    }
 }

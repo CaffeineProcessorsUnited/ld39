@@ -90,7 +90,6 @@ export class AStar {
 
             current = curMinNode
             // console.log("mmmm", current)
-            this.reconstructPath(this.cameFrom, this.to)
             if (current.equals(this.to) || this.curIter > this.maxIter) {
                 this.callback(this.reconstructPath(this.cameFrom, current), true)
                 return
