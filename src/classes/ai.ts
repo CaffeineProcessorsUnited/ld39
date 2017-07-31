@@ -699,7 +699,7 @@ export class AI {
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
-                    let tiles = this.gameState.getTilesForType(2147, "Road")
+                    let tiles = this.gameState.getTilesForType(2158, "Road")
                     if (tiles.length > 0) {
                         let i = 0
                         do {

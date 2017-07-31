@@ -344,22 +344,27 @@
     {
       "x":36,
       "y":14,
-      "enter":"story:destroy-window-1"
+      "keypress":{
+        "Space":"story:destroy-window-1"
+      }
     },
     {
       "x":36,
       "y":16,
-      "enter":"story:destroy-window-2"
-    },
+      "keypress":{
+        "Space":"story:destroy-window-2"
+      }    },
     {
       "x":45,
       "y":20,
-      "enter":"story:destroy-window-3"
-    },
+      "keypress":{
+        "Space":"story:destroy-window-3"
+      }    },
     {
       "x":47,
       "y":20,
-      "enter":"story:destroy-window-4"
-    }
+      "keypress":{
+        "Space":"story:destroy-window-4"
+      }    }
   ]
 }
