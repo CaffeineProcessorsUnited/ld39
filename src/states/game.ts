@@ -677,7 +677,7 @@ export class GameState extends State {
         if (type === AIType.STANDING) {
             this.simulator.spawn(type, state, tile.clone(), tile.clone())
         } else {
-            let npc = this.simulator.spawn(type, state, undefined, tile.clone())
+            let npc = this.simulator.spawn(type, state, undefined, undefined)
             if (state === AIState.SITTING) {
                 npc.sitDown(Math.floor(pos.x), Math.floor(pos.y))
             }
@@ -694,11 +694,11 @@ export class GameState extends State {
             ]
 
             // Spawn generic people
-            range(0, 10).forEach((id) => {
-                window.setTimeout(() => {
-                    this.spawnPlayer(points, [AIType.STANDING], AIState.STROLL)
-                }, id * 10000)
-            })
+            // range(0, 10).forEach((id) => {
+            //     window.setTimeout(() => {
+            //         this.spawnPlayer(points, [AIType.STANDING], AIState.IDLE)
+            //     }, id * 10000)
+            // })
 
             range(0, 20).forEach((id) => {
                 window.setTimeout(() => {
@@ -714,7 +714,7 @@ export class GameState extends State {
                 level === LEVEL.PCPOOL) {
                 let chairs = this.getChairTiles(points)
                 //console.log("++*+", chairs)
-                range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+                //range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
     }
