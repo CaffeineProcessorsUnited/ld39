@@ -68,10 +68,10 @@ export class GameState extends State {
             this.loader.game.load.audio(`club${i}`, `assets/audio/club${i}.ogg`)
         })
         this.game.load.spritesheet("player", "assets/human/adventurer_tilesheet.png", 80, 110)
-        this.game.load.spritesheet("npc0", "assets/human/adventurer_tilesheet.png", 80, 110)
-        this.game.load.spritesheet("npc1", "assets/human/female_tilesheet.png", 80, 110)
-        this.game.load.spritesheet("npc2", "assets/human/soldier_tilesheet.png", 80, 110)
-        this.game.load.spritesheet("npc3", "assets/human/zombie_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("student0", "assets/human/female_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("student1", "assets/human/player_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("guard", "assets/human/soldier_tilesheet.png", 80, 110)
+        this.game.load.spritesheet("prof", "assets/human/zombie_tilesheet.png", 80, 110)
         range(0, 3).forEach((i: number) => {
             this.loader.game.load.spritesheet(`car${i}`, `assets/car/car${i}.png`, 144, 144)
         })
@@ -833,6 +833,7 @@ export class GameState extends State {
             sprite.animations.add("right", [0, 10, 9, 10], 10, true)
             sprite.animations.add("up", [22, 5, 22, 6], 10, true)
             sprite.animations.add("down", [0, 17], 8, true)
+            sprite.scale.set(0.4)
         }
         log("ANIMATION", sprite.animations.isLoaded)
     }

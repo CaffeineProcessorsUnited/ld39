@@ -106,7 +106,7 @@ export class AI {
                 this.giveUp = new IncRand(0.02, 8, 30)
                 this.goHome = new IncRand(0.02, 20, 300)
                 this.alertRadSq = 8
-                spriteKey = `${choose(["female", "player"])}`
+                spriteKey = `student${random(0, 2)}`
                 break
             case AIType.GUARD:
                 this.maxSpeed = 2
@@ -119,7 +119,7 @@ export class AI {
                 this.goHome = new IncRand(0, 0, 0, true)
                 this.alertRadSq = 25
                 this.device = 0
-                spriteKey = "soldier"
+                spriteKey = "guard"
                 break
             case AIType.PROF:
                 this.maxSpeed = 0.7
@@ -131,7 +131,7 @@ export class AI {
                 this.giveUp = new IncRand(0.04, 6, 20)
                 this.goHome = new IncRand(0.01, 120, 600)
                 this.alertRadSq = 12
-                spriteKey = "zombie"
+                spriteKey = "prof"
                 break
             case AIType.EATING:
                 this.maxSpeed = 1
@@ -142,7 +142,7 @@ export class AI {
                 this.giveUp = new IncRand(0.04, 6, 10)
                 this.goHome = new IncRand(0.01, 100, 300)
                 this.alertRadSq = 6
-                spriteKey = `${choose(["female", "player"])}`
+                spriteKey = `student${random(0, 2)}`
                 break
             case AIType.LEARNING:
                 this.maxSpeed = 1
@@ -153,7 +153,7 @@ export class AI {
                 this.giveUp = new IncRand(0.03, 10, 20)
                 this.goHome = new IncRand(0.03, 100, 300)
                 this.alertRadSq = 5
-                spriteKey = `${choose(["female", "player"])}`
+                spriteKey = `student${random(0, 2)}`
                 break
             case AIType.WORKING:
                 this.maxSpeed = 1
@@ -164,7 +164,7 @@ export class AI {
                 this.giveUp = new IncRand(0.03, 10, 16)
                 this.goHome = new IncRand(0.02, 120, 300)
                 this.alertRadSq = 7
-                spriteKey = `${choose(["female", "player"])}`
+                spriteKey = `student${random(0, 2)}`
                 break
             case AIType.SLEEPING:
                 this.maxSpeed = 0.5
@@ -175,7 +175,7 @@ export class AI {
                 this.giveUp = new IncRand(0.05, 2, 10)
                 this.goHome = new IncRand(0.02, 100, 300)
                 this.alertRadSq = 2
-                spriteKey = `${choose(["female", "player"])}`
+                spriteKey = `student${random(0, 2)}`
                 break
             case AIType.VEHICLE:
                 this.maxSpeed = 4
@@ -471,6 +471,8 @@ export class AI {
             this.sprite.body.velocity.y = vy
 
             if (this.speed === 0) {
+                this.sprite.animations.stop()
+                this.sprite.animations.frame = 0
                 return
             }
 
