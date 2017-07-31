@@ -270,6 +270,7 @@ export class GameState extends State {
             },
             {
                 "name": "Ground",
+                "renderable": false,
             },
             {
                 "name": "Glass",
@@ -305,6 +306,7 @@ export class GameState extends State {
                 this.layers[idx] = _layer
                 this.layers[idx].resizeWorld()
                 this.layers[idx].renderable = layer.renderable || true
+                this.layers[idx].visible = layer.visible || true
                 this.layers[idx].autoCull = true
             }
         })

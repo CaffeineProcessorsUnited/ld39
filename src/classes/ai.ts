@@ -279,6 +279,11 @@ export class AI {
         }
         this.pathfinder.setCurrent(this.position)
 
+        this.sound()
+        if (this.findingPath) {
+            return
+        }
+
         if (this.state === AIState.CHASING) {
             if (this.plannedPoints.length > this.maxWalkDistance) {
                 this.setStroll()
@@ -332,6 +337,7 @@ export class AI {
                 this.sprite.y !== this.targetY) {
                 log("GOT TARGET", this.plannedPoints)
                 this.clearTimeout()
+                this.speed = 0
                 if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
                     this.speed = this.maxSpeed
                 } else {
@@ -373,8 +379,6 @@ export class AI {
                 this.onPathComplete()
             }
         }
-
-        this.sound()
 
         this.move()
     }
@@ -444,6 +448,7 @@ export class AI {
     sound() {
         if (!nou(this.spriteSound)) {
             if (this.type === AIType.VEHICLE) {
+                log(this.speed)
                 if (this.speed > 0) {
                     if (!this.spriteSound.isPlaying) {
                         this.spriteSound.loop = true
