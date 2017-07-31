@@ -87,13 +87,13 @@ export class Simulator {
         } else {
             paths = [
                 {
-                    "spawn": new Phaser.Point(77, 59),
+                    "spawn": new Phaser.Point(81, 59),
                 },
                 {
-                    "spawn": new Phaser.Point(78, 59),
+                    "spawn": new Phaser.Point(82, 59),
                 },
                 {
-                    "spawn": new Phaser.Point(79, 59),
+                    "spawn": new Phaser.Point(83, 59),
                 },
             ]
         }

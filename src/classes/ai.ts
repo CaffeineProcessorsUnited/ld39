@@ -3,7 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator"
-import {between, direction, random} from "../sgl/util"
+import {between, choose, direction, random} from "../sgl/util"
 
 export enum AIState {
     IDLE,
@@ -106,7 +106,7 @@ export class AI {
                 this.giveUp = new IncRand(0.02, 8, 30)
                 this.goHome = new IncRand(0.02, 20, 300)
                 this.alertRadSq = 8
-                spriteKey = "standing"
+                spriteKey = `${choose(["female", "player"])}`
                 break
             case AIType.GUARD:
                 this.maxSpeed = 2
@@ -119,7 +119,7 @@ export class AI {
                 this.goHome = new IncRand(0, 0, 0, true)
                 this.alertRadSq = 25
                 this.device = 0
-                spriteKey = "guard"
+                spriteKey = "soldier"
                 break
             case AIType.PROF:
                 this.maxSpeed = 0.7
@@ -131,7 +131,7 @@ export class AI {
                 this.giveUp = new IncRand(0.04, 6, 20)
                 this.goHome = new IncRand(0.01, 120, 600)
                 this.alertRadSq = 12
-                spriteKey = "prof"
+                spriteKey = "zombie"
                 break
             case AIType.EATING:
                 this.maxSpeed = 1
@@ -142,7 +142,7 @@ export class AI {
                 this.giveUp = new IncRand(0.04, 6, 10)
                 this.goHome = new IncRand(0.01, 100, 300)
                 this.alertRadSq = 6
-                spriteKey = "eating"
+                spriteKey = `${choose(["female", "player"])}`
                 break
             case AIType.LEARNING:
                 this.maxSpeed = 1
@@ -153,7 +153,7 @@ export class AI {
                 this.giveUp = new IncRand(0.03, 10, 20)
                 this.goHome = new IncRand(0.03, 100, 300)
                 this.alertRadSq = 5
-                spriteKey = "learning"
+                spriteKey = `${choose(["female", "player"])}`
                 break
             case AIType.WORKING:
                 this.maxSpeed = 1
@@ -164,7 +164,7 @@ export class AI {
                 this.giveUp = new IncRand(0.03, 10, 16)
                 this.goHome = new IncRand(0.02, 120, 300)
                 this.alertRadSq = 7
-                spriteKey = "working"
+                spriteKey = `${choose(["female", "player"])}`
                 break
             case AIType.SLEEPING:
                 this.maxSpeed = 0.5
@@ -175,7 +175,7 @@ export class AI {
                 this.giveUp = new IncRand(0.05, 2, 10)
                 this.goHome = new IncRand(0.02, 100, 300)
                 this.alertRadSq = 2
-                spriteKey = "sleeping"
+                spriteKey = `${choose(["female", "player"])}`
                 break
             case AIType.VEHICLE:
                 this.maxSpeed = 4
@@ -490,6 +490,8 @@ export class AI {
                 case 3:
                     this.sprite.animations.play("left")
                     log("left")
+                    break
+                default:
                     break
             }
 

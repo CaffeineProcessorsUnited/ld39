@@ -457,8 +457,9 @@ export class GameState extends State {
     }
 
     gameOver() {
+        this.shutdown()
         //console.log("GAME OVER")
-        //this.changeState("menu")
+        this.changeState("end")
     }
 
     clubPlayer(amount: number) {
