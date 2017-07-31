@@ -41,6 +41,8 @@ export class GameState extends State {
         this.game.load.image("tilesheet_indoor", "assets/tilesheet_indoor.png")
         this.game.load.image("tilesheet_collision", "assets/tilesheet_collision.png")
         this.game.load.image("tilesheet_custom", "assets/tilesheet_custom.png")
+        this.game.load.image("tilesheet_level", "assets/tilesheet_level.png")
+        this.game.load.image("tilesheet_road", "assets/tilesheet_road.png")
         this.game.load.json("trigger", "assets/trigger.json")
         this.game.load.audio("dark_mix", "assets/audio/dark_mix.ogg")
         range(0, 4).forEach((i: number) => {
@@ -222,10 +224,20 @@ export class GameState extends State {
         this.map.addTilesetImage("City", "tilesheet_city")
         this.map.addTilesetImage("Shooter", "tilesheet_shooter")
         this.map.addTilesetImage("Custom", "tilesheet_custom")
+        this.map.addTilesetImage("Level", "tilesheet_level")
+        this.map.addTilesetImage("Road", "tilesheet_road")
 
         const _layers = [
             {
                 "name": "Collision",
+                "renderable": false,
+            },
+            {
+                "name": "Road",
+                "renderable": false,
+            },
+            {
+                "name": "Level",
                 "renderable": false,
             },
             {

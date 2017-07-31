@@ -24,7 +24,7 @@ export class Simulator {
     respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point): AI {
         let type = object.type
         let state = object.state
-        console.log("vvvv", type, state)
+        console.log("vvvv", type, state, object)
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:
@@ -120,6 +120,10 @@ export class Simulator {
                 entity.pickPocket()
             })
         })
+    }
+
+    isReserved(tile: Phaser.Point) {
+        return this.reservedTiles.hasOwnProperty(tile.toString())
     }
 
 }

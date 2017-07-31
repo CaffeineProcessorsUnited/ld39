@@ -162,13 +162,6 @@
         "Space":"play:piano-high"
       },
       "exit":"stop:piano-high"
-    },
-    {
-      "x":9,
-      "y":9,
-      "keypress": {
-        "Space": "story:teleport"
-      }
     }
   ]
 }

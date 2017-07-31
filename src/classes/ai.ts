@@ -3,7 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator";
-import {random} from "../sgl/util";
+import {choose, random} from "../sgl/util";
 
 export enum AIState {
     IDLE,
@@ -199,7 +199,7 @@ export class AI {
     }
 
     update() {
-        if(this.type === AIType.EATING){
+        if (this.type === AIType.EATING) {
             //debugger
         }
         this.gameState.game.physics.arcade.collide(this.sprite)
@@ -257,17 +257,16 @@ export class AI {
             this.clearTimeout()
             this.speed = 0
         } else {
-            if (!nou(this.targetX) &&
+            if (!nou(this.reservedTile)) {
+                let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
+                this.speed = this.maxSpeed
+                this.setTarget(newTarget.x, newTarget.y)
+            } else if (!nou(this.targetX) &&
                 !nou(this.targetY) &&
                 this.sprite.position.x !== this.targetX &&
-                this.sprite.position.y !== this.targetY)
-            {
+                this.sprite.position.y !== this.targetY) {
                 this.clearTimeout()
-                if (!nou(this.reservedTile)) {
-                    let newTarget = this.pathfinder.tile2pos(this.reservedTile!)
-                    this.speed = this.maxSpeed
-                    this.setTarget(newTarget.x, newTarget.y)
-                } else if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
+                if (this.type === AIType.VEHICLE && !nou(this.plannedPoints) && this.plannedPoints.length > 0) {
                     this.speed = this.maxSpeed
                 } else {
                     this.setStroll()
@@ -455,7 +454,7 @@ export class AI {
         const dy = this.position.y - this.targetY
         const dist = Math.sqrt(dx * dx + dy * dy)
 
-        log(this.position, this.targetX, this.targetY, dx, dy, dist, this.armLength)
+        //log(this.position, this.targetX, this.targetY, dx, dy, dist, this.armLength)
         return dist < this.armLength
     }
 
@@ -538,7 +537,7 @@ export class AI {
     }
 
     reserveTile(tile?: Phaser.Point): Phaser.Point | undefined {
-        if (nou(tile)) {
+        if (!nou(tile)) {
             this.reservedTile = tile
             return tile
         }
@@ -551,11 +550,17 @@ export class AI {
                 break
             case AIType.VEHICLE:
                 if (this.state === AIState.PARKING) {
-                    let tiles = this.gameState.getTilesForType(1438, "Road")
+                    let tiles = this.gameState.getTilesForType(2147, "Road")
+                    //log(tiles)
                     if (tiles.length > 0) {
-
+                        let i = 0
+                        do {
+                            this.reservedTile = tiles[i]
+                        } while (i++ < tiles.length && this.gameState.simulator.isReserved(this.reservedTile))
+                        if (i >= tiles.length) {
+                            throw new Error("You can't spawn more cars than parking lots available! Fegget")
+                        }
                     }
-                    log(this.reservedTile)
                 }
                 break
             default:
