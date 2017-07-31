@@ -558,7 +558,7 @@ export class GameState extends State {
         switch (key) {
             case "piano-low":
             case "piano-high":
-                this.playSound("piano", true)
+                this.stopSound("piano")
                 break
             default:
                 error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
@@ -658,5 +658,9 @@ export class GameState extends State {
                 range(0, 50).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
+    }
+
+    pickUp(device: number) {
+        this.energyReserve += device
     }
 }

@@ -116,11 +116,7 @@ export class Simulator {
     pickPocket() {
         Object.getOwnPropertyNames(this.entities).forEach((type: string) => {
             this.entities[type].forEach((entity: AI) => {
-                let dx = entity.position.x - this.gameState.currentTile.worldX
-                let dy = entity.position.y - this.gameState.currentTile.worldY
-                if (dx * dx + dy * dy < 4 * this.gameState.map.tileWidth * this.gameState.map.tileWidth) {
-                    entity.pickPocket()
-                }
+                entity.pickPocket()
             })
         })
     }

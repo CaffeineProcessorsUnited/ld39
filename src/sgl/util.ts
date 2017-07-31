@@ -40,3 +40,11 @@ export function range(from: number, to: number): number[] {
 export function choose<T>(objs: T[]): T {
     return objs[Math.floor(objs.length * Math.random())]
 }
+
+export function random(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min) + min)
+}
+
+export function randomInt(min: number, max: number) {
+    return Math.floor(random(min, max))
+}
