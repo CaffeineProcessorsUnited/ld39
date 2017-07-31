@@ -48,3 +48,24 @@ export function random(min: number, max: number) {
 export function randomInt(min: number, max: number) {
     return Math.floor(random(min, max))
 }
+
+export function between(value: number, min: number, max: number) {
+    return value >= min && value <= max
+}
+
+export function direction(angle: number) {
+    // convert east is 0 to south west is 0
+    let deg = Phaser.Math.radToDeg(angle + Math.PI)
+    if (deg >= 45 && deg <= 135) {
+        // North
+        return 0
+    } else if (deg >= 135 && deg <= 225) {
+        // East
+        return 1
+    } else if (deg >= 255 && deg <= 315) {
+        // South
+        return 2
+    }
+    // West
+    return 3
+}

@@ -24,7 +24,6 @@ export class Simulator {
     respawn(object: AI, spawn?: Phaser.Point, reserved?: Phaser.Point): AI {
         let type = object.type
         let state = object.state
-        console.log("vvvv", type, state, object)
         switch (type) {
             case AIType.LEARNING:
             case AIType.EATING:
@@ -46,7 +45,6 @@ export class Simulator {
         } else if (!nou(object.spawnPoint)) {
             path.spawn = object.spawnPoint
         }
-        log(path)
         object.spawnPoint = path.spawn
         switch (state) {
             case AIState.DRIVING:

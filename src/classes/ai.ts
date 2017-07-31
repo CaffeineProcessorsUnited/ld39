@@ -3,7 +3,7 @@ import {GameState} from "../states/game"
 import {IncRand} from "./incrand"
 import {Pathfinder} from "./pathfinder"
 import {Simulator} from "./simulator"
-import {random} from "../sgl/util"
+import {between, direction, random} from "../sgl/util"
 
 export enum AIState {
     IDLE,
@@ -30,7 +30,6 @@ export enum AIType {
 export class AI {
     sprite: Phaser.Sprite
     simulator: Simulator
-    speed: number
     maxSpeed: number
     reactionDelay: number
     state: AIState
@@ -59,6 +58,12 @@ export class AI {
     private device: number
     private spawned: boolean = false
     private findingPath = false
+    private _speed: number
+    private speedInTiles: number
+    private static directionN: number[] = [-Math.PI * 3 / 4, -Math.PI * 1 / 4]
+    private static directionE: number[] = [-Math.PI * 1 / 4, Math.PI * 1 / 4]
+    private static directionS: number[] = [Math.PI * 1 / 4, Math.PI * 3 / 4]
+    private static directionW: number[] = [Math.PI * 3 / 4, -Math.PI * 3 / 4]
 
     constructor(simulator: Simulator, type: AIType) {
         this.simulator = simulator
@@ -181,7 +186,7 @@ export class AI {
                 this.giveUp = new IncRand(0, 0, 0)
                 this.goHome = new IncRand(0.06, 5, 6)
                 this.alertRadSq = 0
-                spriteKey = "vehicle"
+                spriteKey = `car${random(0, 3)}`
                 break
             default:
                 throw new Error("Unknown AIType. Fix your shit!")
@@ -189,9 +194,11 @@ export class AI {
         this.newSound()
         this.maxSpeed *= this.tileSize
         this.sprite = this.gameState.layerManager.layer("npc").add(this.gameState.game.add.sprite(0, 0, spriteKey))
+        this.gameState.addAnimations(this.sprite, (this.type === AIType.VEHICLE))
         this.sprite.anchor.set(0.5)
         this.gameState.game.physics.enable(this.sprite)
         this.sprite.body.collideWorldBounds = true
+
         this.player = this.gameState.ref("player", "player")
     }
 
@@ -201,13 +208,22 @@ export class AI {
         return this._reservedTile!
     }
 
-    set reservedTile(point: Phaser.Point) {
+    set reservedTile(point: Phaser.Point | undefined) {
         this._reservedTile = point
         if (!nou(point)) {
             let pos = this.pathfinder.tile2pos(point!)
             this.reservedX = pos.x
             this.reservedY = pos.y
         }
+    }
+
+    get speed() {
+        return this._speed
+    }
+
+    set speed(speed: number) {
+        this._speed = speed
+        this.speedInTiles = speed / this.tileSize
     }
 
     _spawnPoint: Phaser.Point
@@ -270,7 +286,7 @@ export class AI {
 
         if (this.state === AIState.SITTING) {
             if (this.goHome.getRand()) {
-                console.error("STANDUP")
+                log("STANDUP")
                 this.standUp()
             }
         }
@@ -340,6 +356,7 @@ export class AI {
                 this.sprite.y !== this.targetY) {
                 this.clearTimeout()
                 this.speed = 0
+
                 if (!nou(this.plannedPoints) && this.plannedPoints.length > 0) {
                     if (this.type === AIType.VEHICLE) {
                         this.speed = this.maxSpeed
@@ -368,7 +385,6 @@ export class AI {
                         break
                     case AIType.VEHICLE:
                         if (this.state === AIState.PARKING) {
-                            // this.sitDown(this.position.x, this.position.y)
                         }
                         break
                     default:
@@ -413,14 +429,11 @@ export class AI {
             this.sprite.body.velocity.x = 0
             this.sprite.body.velocity.y = 0
         } else {
+            let dx: number
+            let dy: number
             if (this.plannedPoints && this.plannedPoints.length > 0 && this.currentPoint < this.plannedPoints.length) {
-                const dx = this.plannedPoints[this.currentPoint].x - this.position.x
-                const dy = this.plannedPoints[this.currentPoint].y - this.position.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-
-                this.sprite.body.velocity.x = dx / dist * this.speed
-                this.sprite.body.velocity.y = dy / dist * this.speed
-
+                dx = this.plannedPoints[this.currentPoint].x - this.position.x
+                dy = this.plannedPoints[this.currentPoint].y - this.position.y
                 //
                 // this.plannedPoints.forEach(value => {
                 //     this.gameState.game.debug.rectangle(
@@ -440,15 +453,47 @@ export class AI {
                 //         20),
                 //     "#ff00ff")
             } else {
-                const dx = this.targetX - this.position.x
-                const dy = this.targetY - this.position.y
-                const dist = Math.sqrt(dx * dx + dy * dy)
-
-                this.sprite.body.velocity.x = dx / dist * this.speed
-                this.sprite.body.velocity.y = dy / dist * this.speed
+                dx = this.targetX - this.position.x
+                dy = this.targetY - this.position.y
             }
+
+            if (isNaN(dx) || isNaN(dy)) {
+                this.sprite.body.velocity.x = 0
+                this.sprite.body.velocity.y = 0
+                return
+            }
+            const dist = Math.sqrt(dx * dx + dy * dy)
+
+            const vx = dx / dist * this.speed
+            const vy = dy / dist * this.speed
+
+            this.sprite.body.velocity.x = vx
+            this.sprite.body.velocity.y = vy
+
+            if (this.speed === 0) {
+                return
+            }
+
+            log(direction(this.sprite.body.angle))
+            switch (direction(this.sprite.body.angle)) {
+                case 0:
+                    this.sprite.animations.play("up")
+                    log("up")
+                    break
+                case 1:
+                    this.sprite.animations.play("right")
+                    log("right")
+                    break
+                case 2:
+                    this.sprite.animations.play("down")
+                    log("down")
+                case 3:
+                    this.sprite.animations.play("left")
+                    log("left")
+                    break
+            }
+
         }
-        this.sprite.rotation = this.sprite.body.angle
 
     }
 
@@ -538,7 +583,6 @@ export class AI {
         const dy = this.position.y - this.targetY
         const dist = Math.sqrt(dx * dx + dy * dy)
 
-        //log(this.position, this.targetX, this.targetY, dx, dy, dist, this.armLength)
         return dist < this.armLength
     }
 
@@ -602,9 +646,6 @@ export class AI {
             return false
         }
         const tile = this.pathfinder.pos2tile(new Phaser.Point(x, y))
-        if (this.position.x > 80 * 64) {
-            console.trace("SPAWNING PLAYER", tile, this)
-        }
 
         if (this.getCollider()(tile.x, tile.y)) {
             return false
@@ -633,7 +674,7 @@ export class AI {
         }
     }
 
-    newTargets(pos: Phaser.Point[], done: boolean) {
+    newTargets(pos: Phaser.Point[], done: boolean = false) {
         this.plannedPoints = pos
         this.currentPoint = 0
         if (done) {
@@ -678,7 +719,6 @@ export class AI {
     }
 
     onPathComplete() {
-        //log("PATH DONE")
         if (!nou(this.onPathCompleteHandler)) {
             this.onPathCompleteHandler()
         }
@@ -693,6 +733,10 @@ export class AI {
                     !this.gameState.hasCollision(x, y, "Doors")
             }
         }
+    }
+
+    forcePathUpdate() {
+        this.pathfinder.forceUpdate()
     }
 
     private doChase(delay: number) {
@@ -713,9 +757,5 @@ export class AI {
                 console.log("Cannot find suitable location for stroll")
             }
         }, delay * 1000)
-    }
-
-    forcePathUpdate(){
-        this.pathfinder.forceUpdate()
     }
 }

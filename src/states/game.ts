@@ -71,6 +71,9 @@ export class GameState extends State {
         this.game.load.spritesheet("npc1", "assets/human/female_tilesheet.png", 80, 110)
         this.game.load.spritesheet("npc2", "assets/human/soldier_tilesheet.png", 80, 110)
         this.game.load.spritesheet("npc3", "assets/human/zombie_tilesheet.png", 80, 110)
+        range(0, 3).forEach((i: number) => {
+            this.loader.game.load.spritesheet(`car${i}`, `assets/car/car${i}.png`, 144, 144)
+        })
     }
 
     _create = () => {
@@ -778,11 +781,18 @@ export class GameState extends State {
         }
     }
 
-    addAnimations(sprite: Phaser.Sprite) {
-        sprite.animations.add("left", [24, 25, 26, 25], 10, true)
-        sprite.animations.add("right", [0, 10, 9, 10], 10, true)
-        sprite.animations.add("up", [22, 5, 22, 6], 10, true)
-        sprite.animations.add("down", [0, 17], 8, true)
+    addAnimations(sprite: Phaser.Sprite, isCar: boolean = false) {
+        if (isCar) {
+            sprite.animations.add("left", [3])
+            sprite.animations.add("right", [1])
+            sprite.animations.add("up", [0])
+            sprite.animations.add("down", [2])
+        } else {
+            sprite.animations.add("left", [24, 25, 26, 25], 10, true)
+            sprite.animations.add("right", [0, 10, 9, 10], 10, true)
+            sprite.animations.add("up", [22, 5, 22, 6], 10, true)
+            sprite.animations.add("down", [0, 17], 8, true)
+        }
         log("ANIMATION", sprite.animations.isLoaded)
     }
 }
