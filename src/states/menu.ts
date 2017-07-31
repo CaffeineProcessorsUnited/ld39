@@ -6,6 +6,7 @@ export class MenuState extends State {
     booted: boolean = false
     text: Phaser.Text
     keys: Phaser.Sound[] = []
+    drive: Phaser.Sound
     margin: number = 20
     timePassed: number = 0
     wait: number = 5000
@@ -114,10 +115,12 @@ export class MenuState extends State {
             this.keys.push(this.game.add.audio(`key${i}`))
             this.keys[i].allowMultiple = true
         })
-        this.game.add.audio("drive").play()
+        this.drive = this.game.add.audio("drive")
+        this.drive.play()
     }
     _update = () => {
         if (this.ready) {
+            this.drive.stop()
             this.changeState("game")
         }
         log(this.debugCount, this.currentText)
