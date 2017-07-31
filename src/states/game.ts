@@ -503,10 +503,14 @@ export class GameState extends State {
         if (this.unlockedLevel[level]) {
             this.replaceTile(x, y, tid, "Doors")
             this.replaceTile(x, y, -1, "Collision")
+            // this.simulator.forceUpdate()
         }
     }
 
     unlockLevel(idx: number) {
+        if (!this.unlockedLevel[idx]) {
+            this.spreadPlayers(idx)
+        }
         this.unlockedLevel[idx] = true
     }
 
@@ -536,12 +540,10 @@ export class GameState extends State {
                 break
             case "unlock-mensa":
                 this.unlockLevel(LEVEL.MENSA)
-                this.spreadPlayers(LEVEL.MENSA)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked mensa")
                 break
             case "unlock-library":
                 this.unlockLevel(LEVEL.LIBRARY)
-                this.spreadPlayers(LEVEL.LIBRARY)
                 this.showDialogAbove("dialog", t.x, t.y, "Unlocked library")
                 break
             case "message-under-construction-enter":
@@ -682,7 +684,7 @@ export class GameState extends State {
         if (type === AIType.STANDING) {
             this.simulator.spawn(type, state, tile.clone(), tile.clone())
         } else {
-            let npc = this.simulator.spawn(type, state, undefined, undefined)
+            let npc = this.simulator.spawn(type, state, undefined, tile.clone())
             if (state === AIState.SITTING) {
                 npc.sitDown(Math.floor(pos.x), Math.floor(pos.y))
             }
@@ -693,8 +695,8 @@ export class GameState extends State {
         let points = this.getTilesForLevel(level)
         if (points.length > 0) {
             const type = [
-                AIType.GUARD,
-                AIType.PROF,
+                // AIType.GUARD,
+                // AIType.PROF,
                 AIType.EATING,
             ]
 
@@ -705,11 +707,11 @@ export class GameState extends State {
                 }, id * 1000)
             })
 
-            /*range(0, 20).forEach((id) => {
+            range(0, 20).forEach((id) => {
                 window.setTimeout(() => {
                     this.spawnPlayer(points, type, AIState.IDLE)
                 }, id * 5000)
-            })*/
+            })
 
 
             if (level === LEVEL.PARKINGLOT) {
@@ -719,7 +721,7 @@ export class GameState extends State {
                 level === LEVEL.PCPOOL) {
                 let chairs = this.getChairTiles(points)
                 //console.log("++*+", chairs)
-                //range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
+                range(0, 20).forEach(() => this.spawnPlayer(chairs, [AIType.EATING], AIState.SITTING))
             }
         }
     }
