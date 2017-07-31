@@ -4,13 +4,13 @@
       "x": 1,
       "y": 5,
       "enter": "story:tutorial0-enter",
-      "exit": "story:tutorial0-exit"
+      "exit": "story:hide-dialog"
     },
     {
       "x": 2,
       "y": 5,
       "enter": "story:tutorial1-enter",
-      "exit": "story:tutorial1-exit"
+      "exit": "story:hide-dialog"
     },
     {
       "x":40,
@@ -75,12 +75,12 @@
     {
       "x":78,
       "y":36,
-      "enter": "story:opendoor-mensa-exit"
+      "enter": "story:hide-dialog"
     },
     {
       "x":78,
       "y":37,
-      "enter": "story:opendoor-mensa-exit"
+      "enter": "story:hide-dialog"
     },
     {
       "x":41,
@@ -91,14 +91,14 @@
       "x":83,
       "y":36,
       "keypress": {
-        "Space": "story:unlock-library"
+        "Space": "story:message-eismann-library-enter"
       }
     },
     {
       "x":84,
       "y":37,
       "keypress": {
-        "Space": "story:unlock-library"
+        "Space": "story:message-eismann-library-enter"
       }
     },
     {
@@ -165,7 +165,7 @@
       "x":97,
       "y":45,
       "enter": "story:message-under-construction-enter",
-      "exit": "story:message-under-construction-exit"
+      "exit": "story:hide-dialog"
     },
     {
       "x":77,
@@ -182,6 +182,184 @@
         "Space":"play:piano-high"
       },
       "exit":"stop:piano-high"
+    },
+    {
+      "x":31,
+      "y":36,
+      "enter":"story:message-leaves-enter",
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":44,
+      "y":25,
+      "keypress":{
+        "Space":"story:message-eismann-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":43,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-eismann-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":44,
+      "y":23,
+      "keypress":{
+        "Space":"story:message-eismann-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":45,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-eismann-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":34,
+      "y":41,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":34,
+      "y":42,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":34,
+      "y":43,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":33,
+      "y":41,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":33,
+      "y":42,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":33,
+      "y":43,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":32,
+      "y":41,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":32,
+      "y":42,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":32,
+      "y":43,
+      "keypress":{
+        "Space":"story:message-garden-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":48,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-mensa-banner-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":48,
+      "y":25,
+      "keypress":{
+        "Space":"story:message-mensa-banner-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":58,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-toilet-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":67,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-toilet-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":64,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-exam-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":60,
+      "y":24,
+      "keypress":{
+        "Space":"story:message-exam-enter"
+      },
+      "exit":"story:hide-dialog"
+    },
+    {
+      "x":36,
+      "y":14,
+      "enter":"story:destroy-window-1"
+    },
+    {
+      "x":36,
+      "y":16,
+      "enter":"story:destroy-window-2"
+    },
+    {
+      "x":45,
+      "y":20,
+      "enter":"story:destroy-window-3"
+    },
+    {
+      "x":47,
+      "y":20,
+      "enter":"story:destroy-window-4"
     }
   ]
 }

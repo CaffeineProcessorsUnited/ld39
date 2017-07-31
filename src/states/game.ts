@@ -30,6 +30,7 @@ export class GameState extends State {
     walking: boolean = false
     sprinting: boolean = false
     walkingSound: Phaser.Sound
+    hasKeys: boolean = false
 
     _init = (map: string) => {
         // TODO: Select map to load
@@ -118,7 +119,7 @@ export class GameState extends State {
         this.currentTile = this.getCurrentTile()
         // this.ref("dialog", "dialog").above(this.ref("player", "player").position.x, this.ref("player", "player").position.y)
         this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["ground"])
-        if(!this.sprinting) {
+        if (!this.sprinting) {
             this.game.physics.arcade.collide(this.ref("player", "player"), this.layers["collision"])
         }
         this.energyReserve -= this.energyLossPerSecond * this.game.time.elapsedMS / 1000.
@@ -519,12 +520,16 @@ export class GameState extends State {
         this.map.putTile(tid, x, y, layer)
     }
 
-    openDoor(x: number, y: number, tid: number, level: number) {
+    openDoor(x: number, y: number, success: number, level: number) {
         if (this.unlockedLevel[level]) {
-            this.replaceTile(x, y, tid, "Doors")
+            this.replaceTile(x, y, success, "Doors")
             this.replaceTile(x, y, -1, "Collision")
-            // this.simulator.forceUpdate()
         }
+    }
+
+    destroyWindow(x: number, y: number, success: number) {
+        console.log("FUUUUUUU")
+        this.replaceTile(x, y, success, "Environment")
     }
 
     unlockLevel(idx: number) {
@@ -546,31 +551,29 @@ export class GameState extends State {
 
     story(t: Trigger, key: string) {
         switch (key) {
+            case "hide-dialog":
+                this.hideDialog("dialog")
+                break
             case "tutorial0-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Welcome to the game!")
-                break
-            case "tutorial0-exit":
-                this.hideDialog("dialog")
                 break
             case "tutorial1-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Papers on the floor can be very usefull ;)")
                 break
-            case "tutorial1-exit":
-                this.hideDialog("dialog")
-                break
-            case "unlock-mensa":
-                this.unlockLevel(LEVEL.MENSA)
-                this.showDialogAbove("dialog", t.x, t.y, "Unlocked mensa")
-                break
-            case "unlock-library":
-                this.unlockLevel(LEVEL.LIBRARY)
-                this.showDialogAbove("dialog", t.x, t.y, "Unlocked library")
-                break
             case "message-under-construction-enter":
                 this.showDialogAbove("dialog", t.x, t.y, "Under construction")
                 break
-            case "message-under-construction-exit":
-                this.hideDialog("dialog")
+            case "destroy-window-1":
+                this.destroyWindow(37, 14, 2136)
+                break
+            case "destroy-window-2":
+                this.destroyWindow(37, 16, 2148)
+                break
+            case "destroy-window-3":
+                this.destroyWindow(45, 19, 1375)
+                break
+            case "destroy-window-4":
+                this.destroyWindow(47, 19, 1340)
                 break
             case "opendoor-mensa-upper":
                 this.openDoor(40, 19, 1280, LEVEL.MENSA)
@@ -610,6 +613,43 @@ export class GameState extends State {
             case "teleport":
                 this.ref("player", "player").position.x = 79 * this.map.tileWidth
                 this.ref("player", "player").position.y = 37 * this.map.tileHeight
+                break
+            case "message-leaves-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "Leaves blowing in the wind")
+                break
+            case "message-mensa-banner-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "Only today: 1L beer only 4.20€")
+                break
+            case "message-garden-enter":
+                if (!this.hasKeys) {
+                    if (Math.random() < 0.1) {
+                        this.hasKeys = true
+                        this.showDialogAbove("dialog", t.x, t.y, "I found some keys")
+                    } else {
+                        this.showDialogAbove("dialog", t.x, t.y, "Just some greens growing here")
+                    }
+                } else {
+                    this.showDialogAbove("dialog", t.x, t.y, "Just some greens growing here")
+                }
+                break
+            case "message-eismann-enter":
+                if (!this.hasKeys) {
+                    this.showDialogAbove("dialog", t.x, t.y, "I lost my keys. Can you find them?")
+                } else {
+                    this.showDialogAbove("dialog", t.x, t.y, "Thank you for finding them! Enjoy your dinner.")
+
+                    this.unlockLevel(LEVEL.MENSA)
+                }
+                break
+            case "message-eismann-library-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "How are exams going?")
+                break
+            case "message-toilet-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "It's so beautiful in here")
+                break
+            case "message-exam-enter":
+                this.showDialogAbove("dialog", t.x, t.y, "Fib(0)=1;Fib(1)=1;Fib(n)=Fib(n-1)+Fib(n-2)\n\nWhat does that mean?\nI should go and learn...")
+                this.unlockLevel(LEVEL.LIBRARY)
                 break
             default:
                 error(`Unhandled story action ${key} at ${t.x}, ${t.y}`)
